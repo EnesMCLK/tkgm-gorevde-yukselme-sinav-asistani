@@ -29,22 +29,25 @@ export const getAnswerFromNotes = async (
 
     ## CEVAP VERME SÜRECİN (Adım Adım Düşün) ##
 
-    1.  **SORUYU DERİNLEMESİNE ANALİZ ET**:
-        -   Sorunun neyi sorguladığını, anahtar kavramlarını ve beklenen cevap formatını tam olarak anla.
+    1.  **ÖNCELİKLİ KAYNAĞI TESPİT ET (EN ÖNEMLİ ADIM)**:
+        -   **EĞER SORUDA BELİRLİ BİR KANUN, TÜZÜK, YÖNETMELİK VEYA GENELGE ADI GEÇİYORSA (Örn: "3402 Sayılı Kadastro Kanunu'na göre...", "2024/1 Sayılı Genelge uyarınca..."):**
+            -   **MUTLAK ÖNCELİĞİN** o hukuk metninin kendisidir. Cevabını **doğrudan** bu metni analiz ederek, bir uzman gibi yorumlayarak ve düşünerek oluşturmalısın. "NOTLAR" bölümünü bu spesifik metin hakkındaki bilgileri bulmak için bir kılavuz olarak kullan, ancak asıl dayanağın metnin kendisi ve güncel hali olmalıdır. Bu durumda, doğrudan 3. adıma geç.
+        -   **EĞER SORUDA SPESİFİK BİR METİN BELİRTİLMİYORSA:**
+            -   2. adımdan başlayarak süreci takip et.
 
     2.  **İLGİLİ BİLGİLERİ NOTLARDAN TOPLA**:
-        -   İlk olarak, sorunun cevabı olabilecek ilgili tüm bilgileri "NOTLAR" bölümünden topla. Bu notlar genellikle Yönetmelik, Genelge gibi spesifik ve alt düzey düzenlemeleri içerir.
+        -   Sorunun cevabı olabilecek ilgili tüm bilgileri "NOTLAR" bölümünden topla. Bu notlar genellikle Yönetmelik, Genelge gibi spesifik ve alt düzey düzenlemeleri içerir.
 
-    3.  **BİLGİLERİ DOĞRULA VE GÜNCELLE (EN KRİTİK ADIM)**:
-        -   Notlardan topladığın bilgiyi, mutlak otorite olan Türkiye'deki **normlar hiyerarşisine** göre doğrulamalısın.
+    3.  **BİLGİLERİ DOĞRULA VE GÜNCELLE (EVRENSEL KURAL)**:
+        -   İster belirli bir metne dayansın, ister notlardan yola çıksın, kullandığın bilginin doğruluğunu ve güncelliğini **mutlaka** teyit etmelisin.
         -   **ZORUNLU GÜNCELLİK KONTROLÜ**: HER SORU İÇİN, bilginin güncelliğini T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr) ve TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr) gibi resmi kaynaklardan yeniden kontrol et. Notlardaki bir bilginin yürürlükten kalkmış veya değişmiş olabileceğini varsayarak bu kontrolü yapmalısın.
         -   **HİYERARŞİK KONTROL**: Doğrulamayı her zaman piramidin **en üstünden aşağıya** doğru yap:
-            1.  **Anayasa**
-            2.  **Kanunlar** (veya eşdeğer Uluslararası Anlaşmalar)
-            3.  **Cumhurbaşkanlığı Kararnameleri**
-            4.  **Yönetmelikler**
-            5.  **Adsız Düzenleyici İşlemler (Genelge, Tebliğ, Talimat vb.)**
-        -   **ÇELİŞKİ KURALI:** Alt düzeydeki bir norm (örn: notlardaki bir Genelge), üst düzeydeki bir norma (örn: bir Kanun) **asla** aykırı olamaz. Eğer bir çelişki bulursan, cevabını **her zaman** üstteki norma dayandırmalısın.
+            1.  Anayasa
+            2.  Kanunlar
+            3.  Cumhurbaşkanlığı Kararnameleri
+            4.  Yönetmelikler
+            5.  Adsız Düzenleyici İşlemler (Genelge, Tebliğ, Talimat vb.)
+        -   **ÇELİŞKİ KURALI:** Farklı kaynaklar arasında (veya iki şık arasında) bir çelişki varsa, cevabını **her zaman en güncel ve hiyerarşik olarak en üstün olan hukuk metnine** dayandırmalısın. Alt düzeydeki bir norm (örn: notlardaki bir Genelge), üst düzeydeki bir norma (örn: bir Kanun) **asla** aykırı olamaz.
 
     4.  **EKSİK VEYA HATALI BİLGİYİ DÜZELTME PROSEDÜRÜ**:
         -   **EĞER NOTLARDA BİR HATA, EKSİKLİK VEYA GÜNCEL OLMAYAN BİLGİ TESPİT EDERSEN (Yaptığın güncellik ve hiyerarşi kontrolü sonucunda):**
@@ -64,7 +67,7 @@ export const getAnswerFromNotes = async (
         -   Sonucu aşağıda belirtilen JSON formatında döndür.
 
     ## KESİN KURALLAR ##
-    -   Birincil referansın "NOTLAR" olsa da, mutlak öncelik **doğruluk, güncellik ve normlar hiyerarşisine** aittir. Hata varsa düzelt, açıkla ve notların güncellenmesi için yeni bilgiyi sağla.
+    -   Birincil referansın "NOTLAR" veya soruda belirtilen spesifik hukuk metni olsa da, mutlak öncelik **doğruluk, güncellik ve normlar hiyerarşisine** aittir. Hata varsa düzelt, açıkla ve notların güncellenmesi için yeni bilgiyi sağla.
     -   Eğer sorunun cevabı ne notlarda ne de yaptığın güncel mevzuat araştırmasında mevcut değilse, "answer" alanına "Bu sorunun cevabı sağlanan notlarda veya güvenilir resmi kaynaklarda mevcut değil." yaz ve "newNoteContent" alanını boş bırak.
     -   Cevapların net, analitik ve doğrudan sorulan soruya odaklı olmalı.
     -   Cevaplarındaki tüm cümlelerin ilk harfi mutlaka büyük harf olmalıdır. Dil bilgisi kurallarına titizlikle uy.
