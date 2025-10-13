@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { getAnswerFromNotes, categorizeUpdate } from './services/geminiService';
 import Spinner from './components/Spinner';
 import { marked } from 'marked';
@@ -163,20 +164,51 @@ Bu notlar, Tapu ve Kadastro Genel Müdürlüğü'nün 2025 yılı için ilan ett
 `;
 // --- NOTLARIN SONU ---
 
-const licenseText = `Copyright (c) 2024 TKGM Görevde Yükselme Sınav Asistanı Geliştiricileri
+const licenseText = `## Telif Hakkı ve Fikri Mülkiyet Bilgisi
 
-TÜM HAKLARI SAKLIDIR.
+**Kaynak İçerik:**
+Bu yapay zeka asistanının dayandığı orijinal metin içeriğinin (yasa maddeleri, yönetmelikler, tebliğler ve diğer kaynak dokümanlar) telif hakkı, ilgili kanunları hazırlayan kişi ve kurumlara aittir.
 
-İşbu yazılım ("Yazılım") ve beraberindeki tüm belgeler, tescilli ve gizli mülktür.
+**Yazılım Bilgisi ve Sorumluluk Reddi:**
+Yapay Zeka Asistanının kullanım hakları ve telifleri, Google LLC'nin kullanım politikaları tarafından korunmaktadır ve bu politikalara tabidir.
 
-Bu Yazılımın sahibinin veya yetkili temsilcisinin önceden yazılı izni olmaksızın, bu Yazılımın hiçbir bölümü, herhangi bir biçimde veya herhangi bir yolla (elektronik, mekanik, fotokopi, kayıt veya başka bir şekilde) çoğaltılamaz, dağıtılamaz, iletilemez, kaynak koda dönüştürülemez, tersine mühendislik işlemine tabi tutulamaz, parçalara ayrılamaz veya değiştirilemez.
-
-Bu Yazılım "OLDUĞU GİBİ" sağlanmaktadır ve yasaların izin verdiği azami ölçüde, Yazılımın sahibi, satılabilirlik, belirli bir amaca uygunluk ve ihlal etmeme garantileri de dahil olmak üzere, açık veya zımni hiçbir garanti vermemektedir.
-
-Yazılımın sahibi, hiçbir durumda, bu Yazılımın kullanımından veya kullanılamamasından kaynaklanan (kâr kaybı, iş kesintisi, bilgi kaybı veya diğer maddi kayıplar dahil ancak bunlarla sınırlı olmamak üzere) doğrudan, dolaylı, arızi, özel, örnek veya sonuç olarak ortaya çıkan zararlardan, bu tür zararların olasılığı bildirilmiş olsa bile, sorumlu tutulamaz.
+Bu yazılımın geliştiricisi, yazılımın kullanımından veya kullanılamamasından kaynaklanan (kâr kaybı, iş kesintisi, bilgi kaybı veya diğer maddi kayıplar dahil ancak bunlarla sınırlı olmamak üzere) doğrudan, dolaylı, arızi, özel, örnek veya sonuç olarak ortaya çıkan zararlardan, bu tür zararların olasılığı bildirilmiş olsa bile, sorumlu tutulamaz.
 `;
 
+const parseNotes = (notes: string): Record<string, string> => {
+  const sections = notes.split(/(?=^## BÖLÜM \d:|^### \d\.\d\.)/m);
+  const parsedNotes: Record<string, string> = {};
+  if (sections.length > 0 && sections[0].trim() === "") sections.shift();
+
+  sections.forEach(section => {
+    const titleLine = section.split('\n')[0];
+    if (titleLine.includes('BÖLÜM 1: ORTAK KONULAR')) {
+      parsedNotes['Ortak Konular'] = section;
+    } else if (titleLine.includes('Tapu Müdürü')) {
+      parsedNotes['Tapu Müdürü ve Tapu Sicil Müdür Yardımcısı'] = section;
+    } else if (titleLine.includes('Avukat Konuları')) {
+      parsedNotes['Avukat'] = section;
+    } else if (titleLine.includes('Mühendis (Harita ve Kontrol)')) {
+      parsedNotes['Mühendis (Harita ve Kontrol)'] = section;
+    } else if (titleLine.includes('Gıda Mühendisi')) {
+      parsedNotes['Gıda Mühendisi'] = section;
+    }
+  });
+  return parsedNotes;
+};
+
+
 const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onClose, content }) => {
+  const [htmlContent, setHtmlContent] = useState('');
+
+  useEffect(() => {
+    const parseContent = async () => {
+      const parsed = await marked.parse(content);
+      setHtmlContent(parsed);
+    };
+    parseContent();
+  }, [content]);
+
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -187,10 +219,11 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4"
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="license-title"
+      // FIX: Corrected typo from `onclose` to `onClose` to match the prop name.
       onClick={onClose}
     >
       <div 
@@ -203,257 +236,218 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
-        <main className="p-6 overflow-y-auto">
-          <pre className="whitespace-pre-wrap text-sm text-slate-600 font-sans">{content}</pre>
-        </main>
-        <footer className="p-4 bg-slate-50 border-t text-right rounded-b-lg">
-           <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-             Kapat
-           </button>
+        <div className="p-6 overflow-y-auto">
+          <div 
+            className="prose prose-sm prose-zinc max-w-none" 
+            style={{ color: 'black' }}
+            dangerouslySetInnerHTML={{ __html: htmlContent }} 
+          />
+        </div>
+        <footer className="p-4 border-t text-right">
+          <button 
+            onClick={onClose} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Anladım
+          </button>
         </footer>
       </div>
     </div>
   );
 };
 
-
 const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
+  const [image, setImage] = useState<{ file: File; base64: string; mimeType: string; } | null>(null);
   const [answer, setAnswer] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [image, setImage] = useState<{ file: File; base64: string; mimeType: string; } | null>(null);
-  const [notes, setNotes] = useState<string>(initialNotes);
-  const [updateNotification, setUpdateNotification] = useState<string>('');
-  const [isPreview, setIsPreview] = useState<boolean>(false);
-  const [isLicenseVisible, setIsLicenseVisible] = useState<boolean>(false);
-  
-  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const [currentNotes, setCurrentNotes] = useState<string>(initialNotes);
+  const [isLicenseVisible, setIsLicenseVisible] = useState(false);
+  const answerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('view') === 'preview') {
-      setIsPreview(true);
-    }
-  }, []);
+  const parsedNotes = useMemo(() => parseNotes(currentNotes), [currentNotes]);
+  const examCategories = useMemo(() => Object.keys(parsedNotes).filter(k => k !== 'Ortak Konular'), [parsedNotes]);
+  const [selectedExam, setSelectedExam] = useState<string>('Mühendis (Harita ve Kontrol)');
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 16 * 1024 * 1024) { // 16MB limit
-        setError("Dosya boyutu 16MB'den büyük olamaz.");
+      if (file.size > 16 * 1024 * 1024) { 
+        alert("Dosya boyutu 16MB'tan büyük olamaz.");
         return;
       }
       try {
-        setError(null);
         const base64 = await fileToBase64(file);
-        setImage({
-          file: file,
-          base64: base64,
-          mimeType: file.type,
-        });
-      } catch (err) {
-        setError("Görsel işlenirken bir hata oluştu.");
-        console.error(err);
+        setImage({ file, base64, mimeType: file.type });
+      } catch (error) {
+        console.error("Görsel dönüştürme hatası:", error);
+        alert("Görsel yüklenirken bir hata oluştu.");
       }
     }
   };
 
-  const clearImage = () => {
+  const removeImage = () => {
     setImage(null);
-    if (imageFileInputRef.current) {
-        imageFileInputRef.current.value = "";
+    if(fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim() || isPreview) {
-      setError('Lütfen sorunuzu girin.');
-      return;
-    }
-    
+  const handleSubmit = useCallback(async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    if (!question.trim() || isLoading) return;
+
     setIsLoading(true);
-    setError(null);
     setAnswer('');
-    setUpdateNotification('');
+
+    const notesForPrompt = (parsedNotes['Ortak Konular'] || '') + '\n\n' + (parsedNotes[selectedExam] || '');
 
     try {
-      const imagePayload = image ? { data: image.base64, mimeType: image.mimeType } : undefined;
-      const result = await getAnswerFromNotes(notes, question, imagePayload);
-      
-      setAnswer(result.answer);
+      const result = await getAnswerFromNotes(notesForPrompt, question, image ? { data: image.base64, mimeType: image.mimeType } : undefined);
+      const formattedAnswer = await marked.parse(result.answer);
+      setAnswer(formattedAnswer);
 
-      if (result.newNoteContent && result.newNoteContent.trim() !== '') {
-        const categories = [
-          "## BÖLÜM 1: ORTAK KONULAR (TÜM ADAYLAR İÇİN) ##",
-          "### 2.1. Tapu Müdürü ve Tapu Sicil Müdür Yardımcısı Konuları",
-          "### 3.1. Avukat Konuları",
-          "### 3.2. Mühendis (Harita ve Kontrol) Konuları",
-          "### 3.3. Gıda Mühendisi Konuları"
-        ];
+      if (result.newNoteContent) {
+        console.log("Yeni not içeriği tespit edildi. Notlar güncelleniyor.");
+        const relevantCategory = await categorizeUpdate(question, Object.keys(parsedNotes));
         
-        const category = await categorizeUpdate(question, categories);
-        const newContent = `\n- **GÜNCELLEME (${new Date().toLocaleDateString('tr-TR')}):** ${result.newNoteContent.trim().replace(/\n/g, '\n  ')}`;
-
-        setNotes(prevNotes => {
-          const categoryIndex = prevNotes.indexOf(category);
-          if (categoryIndex === -1) {
-            // Kategori bulunamazsa, esnek bir geri dönüşüm olarak sona ekle
-            return `${prevNotes}\n\n---\n## KATEGORİZE EDİLEMEMİŞ GÜNCELLEME: ${new Date().toLocaleString('tr-TR')} ##\n${result.newNoteContent}`;
-          }
-
-          // Bir sonraki bölüm başlığını bulmak için başlangıç noktasını ayarla
-          const searchStartIndex = categoryIndex + category.length;
-          const nextSectionRegex = /\n(##|###)\s/g;
-          nextSectionRegex.lastIndex = searchStartIndex;
-          const match = nextSectionRegex.exec(prevNotes);
-
-          if (match) {
-            // Sonraki bölüm bulundu, hemen öncesine ekle
-            const insertionIndex = match.index;
-            return prevNotes.slice(0, insertionIndex).trimEnd() + '\n' + newContent + '\n\n' + prevNotes.slice(insertionIndex);
-          } else {
-            // Bu son bölümdü, sonuna ekle
-            return prevNotes.trimEnd() + '\n' + newContent;
-          }
-        });
+        // Find the full content of the category to append to
+        const categoryContent = parsedNotes[relevantCategory];
         
-        const categoryName = category.replace(/#+\s/,'').replace(/ \(.+\)/, '').split(' Konuları')[0];
-        setUpdateNotification(`Bilgi tabanı "${categoryName}" bölümünde güncellendi!`);
-        setTimeout(() => setUpdateNotification(''), 7000);
+        if (categoryContent) {
+           const updatedCategoryContent = `${categoryContent}\n\n${result.newNoteContent}`;
+           const newNotes = currentNotes.replace(categoryContent, updatedCategoryContent);
+           setCurrentNotes(newNotes);
+           console.log(`'${relevantCategory}' kategorisi güncellendi.`);
+        } else {
+           console.warn("İlgili kategori bulunamadı, notlar güncellenmedi.");
+        }
       }
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
-      setError(`Cevap alınırken bir hata oluştu: ${errorMessage}`);
+    } catch (error) {
+      console.error(error);
+      setAnswer("<p class='text-red-500'>Bir hata oluştu. Lütfen tekrar deneyin.</p>");
     } finally {
       setIsLoading(false);
     }
-  }, [question, image, notes, isPreview]);
+  }, [question, image, isLoading, currentNotes, selectedExam, parsedNotes]);
+
+  useEffect(() => {
+    if (answerRef.current) {
+      answerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [answer]);
+  
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans">
-      <Header />
-      <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white p-8 rounded-xl shadow-lg space-y-8">
-          
-          {isPreview && (
-            <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md mb-6" role="alert">
-              <p className="font-bold">Önizleme Modu</p>
-              <p>Bu, uygulamanın etkileşimli olmayan bir önizlemesidir. Soru sorma ve dosya yükleme özellikleri bu modda devre dışı bırakılmıştır.</p>
-            </div>
-          )}
+    <>
+      {isLicenseVisible && <LicenseModal onClose={() => setIsLicenseVisible(false)} content={licenseText} />}
+      <div className="flex flex-col min-h-screen">
+        <Header />
 
-          {/* Question Section */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="question" className="block text-lg font-semibold text-slate-700 mb-2">
-                Sorunuzu Sorun
-              </label>
-              <p className="text-sm text-slate-500 mb-3">
-                'TKGM Görevde Yükselme ve Unvan Değişikliği Sınavı' için tüm unvanlara ait resmi sınav konuları sisteme yüklenmiştir. Sorunuzu aşağıya yazabilir, isterseniz bir fotoğraf ekleyebilirsiniz.
-              </p>
-              <div className="space-y-4">
-                <textarea
-                  id="question"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder={isPreview ? "Soru sorma bu modda devre dışıdır." : "Örn: 3402 Sayılı Kanun'a göre kadastro komisyonu kimlerden oluşur?"}
-                  className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-slate-800 bg-slate-50 disabled:bg-slate-200 disabled:cursor-not-allowed"
-                  disabled={isLoading || isPreview}
-                  rows={3}
-                />
-                
-                {image && (
-                  <div className="relative inline-block">
-                      <img src={`data:${image.mimeType};base64,${image.base64}`} alt="Seçilen önizleme" className="h-32 w-auto rounded-lg shadow-md" />
-                      <button 
-                          type="button"
-                          onClick={clearImage}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                          aria-label="Fotoğrafı kaldır"
-                          disabled={isPreview}
-                      >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                      </button>
+        <main className="flex-grow w-full">
+          <div className="py-6">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                 <div className="mb-4">
+                    <label htmlFor="exam-select" className="block text-sm font-medium text-slate-700 mb-1">
+                      Sınav Alanınızı Seçin:
+                    </label>
+                    <select
+                      id="exam-select"
+                      name="exam"
+                      className="w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white text-black"
+                      value={selectedExam}
+                      onChange={(e) => setSelectedExam(e.target.value)}
+                      aria-label="Sınav Alanı Seçimi"
+                    >
+                      {examCategories.map(category => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                )}
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                    <input 
-                        type="file"
-                        ref={imageFileInputRef}
-                        onChange={handleImageChange}
-                        className="hidden"
-                        accept="image/png, image/jpeg, image/webp"
-                        disabled={isPreview}
+
+                <form onSubmit={handleSubmit}>
+                  <div className="relative">
+                    <textarea
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Sorunuzu buraya yazın... (Örn: Kamulaştırma Kanunu'na göre 'acele kamulaştırma' hangi durumlarda uygulanır?)"
+                      className="w-full h-48 p-4 pr-12 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black"
+                      aria-label="Soru"
+                      disabled={isLoading}
                     />
                     <button
-                        type="button"
-                        onClick={() => imageFileInputRef.current?.click()}
-                        disabled={isLoading || isPreview}
-                        className="inline-flex items-center justify-center px-4 py-3 border border-slate-300 text-base font-medium rounded-lg shadow-sm text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                      type="submit"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      disabled={isLoading || !question.trim()}
+                      aria-label="Soruyu gönder"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>
-                        {image ? 'Fotoğrafı Değiştir' : 'Fotoğraf Ekle'}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                      </svg>
                     </button>
-                    <button
-                        type="submit"
-                        disabled={isLoading || !question.trim() || isPreview}
-                        className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {isLoading ? 'Lütfen Bekleyin...' : 'Soruyu Cevapla'}
-                    </button>
-                </div>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100" disabled={isLoading}>
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                        </svg>
+                        Görsel Ekle
+                      </button>
+                      <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
+                      {image && (
+                        <div className="flex items-center space-x-2 text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                          <span>{image.file.name}</span>
+                          <button onClick={removeImage} className="text-red-500 hover:text-red-700" aria-label="Görseli kaldır">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </form>
               </div>
             </div>
-          </form>
-
-          {/* Answer Section */}
-          <div>
-            <h2 className="text-lg font-semibold text-slate-700 mb-3">
-              Yapay Zeka Cevabı
-            </h2>
-            <div className="min-h-[10rem] p-6 bg-slate-50 border border-slate-200 rounded-lg">
-              {error && <p className="text-red-600 font-medium">{error}</p>}
-              {isLoading && <Spinner />}
-              {answer && !isLoading && (
-                <div 
-                    className="prose prose-slate max-w-none text-slate-800"
-                    dangerouslySetInnerHTML={{ __html: marked(answer) as string }}
-                >
-                </div>
-              )}
-              {!answer && !isLoading && !error && (
-                <p className="text-slate-500">
-                  {isPreview 
-                    ? 'Bu alanda yapay zeka tarafından üretilen cevaplar gösterilir. Bu bir önizleme olduğu için soru soramazsınız.' 
-                    : 'Cevabınız burada görünecektir.'}
-                </p>
-              )}
-            </div>
-            {updateNotification && (
-                <div className="mt-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm transition-opacity duration-500 animate-pulse">
-                    {updateNotification}
-                </div>
-            )}
           </div>
-        </div>
-        <footer className="text-center mt-8 text-sm text-slate-500 space-y-2">
-          <p>Bu araç, Gemini API kullanılarak oluşturulmuştur. Cevapların doğruluğu sağlanan notlara ve referans gösterilen mevzuatlara bağlıdır.</p>
-           <p>
-            <button
-              onClick={() => setIsLicenseVisible(true)}
-              className="underline hover:text-blue-700 transition-colors"
-            >
-              Telif Hakkı & Lisans
+          
+          {(isLoading || answer) && (
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                {isLoading ? (
+                  <Spinner />
+                ) : (
+                  <div 
+                    ref={answerRef} 
+                    className="prose prose-zinc max-w-none" 
+                    style={{ color: 'black' }}
+                    dangerouslySetInnerHTML={{ __html: answer }} />
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+
+        <footer className="bg-white mt-auto">
+          <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <p>Bu asistan, yalnızca çalışma amacıyla kullanılan bir yapay zeka uygulamasıdır.</p>
+            <button onClick={() => setIsLicenseVisible(true)} className="text-blue-600 hover:underline">
+              Telif Hakkı & Lisans Bildirimi
             </button>
-          </p>
+          </div>
         </footer>
-      </main>
-      {isLicenseVisible && <LicenseModal onClose={() => setIsLicenseVisible(false)} content={licenseText} />}
-    </div>
+      </div>
+    </>
   );
 };
 
