@@ -67,6 +67,7 @@ export const getAnswerFromNotes = async (
     -   Birincil referansın "NOTLAR" olsa da, mutlak öncelik **doğruluk, güncellik ve normlar hiyerarşisine** aittir. Hata varsa düzelt, açıkla ve notların güncellenmesi için yeni bilgiyi sağla.
     -   Eğer sorunun cevabı ne notlarda ne de yaptığın güncel mevzuat araştırmasında mevcut değilse, "answer" alanına "Bu sorunun cevabı sağlanan notlarda veya güvenilir resmi kaynaklarda mevcut değil." yaz ve "newNoteContent" alanını boş bırak.
     -   Cevapların net, analitik ve doğrudan sorulan soruya odaklı olmalı.
+    -   Cevaplarındaki tüm cümlelerin ilk harfi mutlaka büyük harf olmalıdır. Dil bilgisi kurallarına titizlikle uy.
 
     ---
     NOTLAR:
