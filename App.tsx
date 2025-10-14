@@ -38,170 +38,75 @@ const fileToBase64 = (file: File): Promise<string> => {
 // Daha fazla bilgi için projenin LICENSE dosyasına bakınız.
 // --- BİLDİRİM SONU ---
 const initialNotes = `
-# TKGM GÖREVDE YÜKSELME VE ÜNVAN DEĞİŞİKLİĞİ SINAVI NOTLARI (2025) #
+# ROL VE HEDEF
+Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, "NOTLAR" olarak tanımlanan bilgi kaynağını ve diğer girdileri kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
 
-Bu notlar, Tapu ve Kadastro Genel Müdürlüğü'nün 2025 yılı için ilan ettiği Görevde Yükselme ve Unvan Değişikliği Sınavı'nın resmi konularını içermektedir.
+## BİLGİ KAYNAKLARI
+- **Birincil Kaynak:** Sana daha önce yüklenmiş olan **"TKGM GÖREVDE YÜKSELME VE ÜNVAN DEĞİŞİKLİĞİ SINAVI NOTLARI (2025)"** dokümanı senin temel bilgi havuzundur.
+- **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü PDF belgesi, görsel veya ek metin.
+- **Doğrulama Kaynakları:** T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr) ve TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr).
 
-## BÖLÜM 1: ORTAK KONULAR (TÜM ADAYLAR İÇİN) ##
-- **T.C. Anayasası**: Genel Esaslar, Temel Hak ve Ödevler, Devletin Temel Organları
-- **Atatürk İlkeleri ve İnkılap Tarihi**
-- **657 Sayılı Devlet Memurları Kanunu**
-- **Kamu Görevlileri Etik Davranış İlkeleri İle Başvuru Usul Ve Esasları Hakkında Yönetmelik**
-- **Resmi Yazışmalarda Uygulanacak Usul Ve Esaslar Hakkında Yönetmelik**
-- **4 Sayılı Cumhurbaşkanlığı Kararnamesi (TKGM ile ilgili 478 ila 488. Maddeleri)**
+# TEMEL FELSEFE: KONTROL VE SENTEZ
+Çalışma prensibin iki temel aşamadan oluşur:
+1.  **Kontrol (Üstten Alta):** Bilginin doğruluğunu ve geçerliliğini, en üst hukuk normundan en alta doğru sorgularsın.
+2.  **Sentez (Alttan Üste):** Geçerli olan en spesifik bilgiden yola çıkarak, cevabını bir argüman gibi inşa edersin.
 
-### 4 Sayılı Cumhurbaşkanlığı Kararnamesi Detayları (TKGM İlgili Daire Başkanlıkları)
+---
 
-#### Madde 482 - Tapu Dairesi Başkanlığı
-(1) Tapu Dairesi Başkanlığının görev ve yetkileri şunlardır:
-a) Tapu sicil ve kayıtlarının mevzuata uygun olarak tutulmasını sağlamak, bu amaçla gerekli tedbirleri almak.
-b) Akde ve tescile ilişkin her türlü işlemi yapmak, yaptırmak ve denetlemek.
-c) Gerçek ve tüzel kişilerin mülkiyet ve mülkiyetin gayri ayni haklarına ilişkin her türlü akit ve tescil işlerini yapmak veya yaptırmak.
-ç) Devletin sorumluluğunda bulunan tapu sicillerinin düzenli bir şekilde tutulmasını, aleniyetini sağlamak.
-d) Sahteciliğe konu olan tapu sicil ve belgelerinin idari ve adli mercilere intikalini sağlamak ve takibini yapmak.
-e) Yabancı uyruklu gerçek ve tüzel kişilerin ülkedeki tapu ve kadastro işlemlerini yapmak, yaptırmak, mevzuat çerçevesinde tutulması gereken kayıtları tutmak, istatistiki bilgileri derlemek ve ilgili kurum ve kuruluşlara göndermek.
-f) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+## ADIM ADIM DÜŞÜNME VE CEVAP VERME SÜRECİ ##
 
-#### Madde 483 - Kadastro Dairesi Başkanlığı
-(1) Kadastro Dairesi Başkanlığının görev ve yetkileri şunlardır:
-a) Ülkenin kadastrosunu yapmak, yaptırmak, denetlemek, tescil ve arşivleme işlemlerini yapmak veya yaptırmak.
-b) Yenileme ve güncelleme çalışmalarını yapmak veya yaptırmak.
-c) Tescile konu her türlü plan ve teknik içerikli belgelerin kontrolünü yapmak veya yaptırmak.
-ç) Tapu planlarının teknik yönden reddine dair müdürlüklerce verilen kararlara karşı yapılan itirazları inceleyerek Genel Müdürlük görüşünü hazırlamak.
-d) Kadastro ve tapu ile ilgili teknik uyuşmazlıklarda mahkemelere ve diğer kamu kurum ve kuruluşlarına teknik bilirkişi hizmeti vermek veya verdirmek.
-e) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksiksiz olarak uygula:
 
-#### Madde 484 - Harita Dairesi Başkanlığı
-(1) Harita Dairesi Başkanlığının görev ve yetkileri şunlardır:
-a) Ülke jeodezik altyapısını oluşturmak, geliştirmek, yenilemek, hizmete sunmak.
-b) Büyük ölçekli harita ve harita bilgilerinin üretimini yapmak, yaptırmak ve denetlemek.
-c) Hava fotoğrafları ve uydu görüntülerini temin etmek, fotogrametrik ve yersel yöntemlerle harita ve harita bilgileri üretmek.
-ç) Ulusal coğrafi bilgi sisteminin altyapısını oluşturmaya yönelik çalışmalar yapmak.
-d) Harita ve harita bilgisi üretim standartlarını belirlemek.
-e) Harita, plan, hava fotoğrafı, uydu görüntüsü ve diğer teknik belgelerin arşivlenmesini, korunmasını ve faydalanılmasını sağlamak.
-f) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+### Adım 1: Soru Analizi (Ne Soruluyor?)
+- Sorunun kökünü dikkatlice oku ve neyi sorduğunu tam olarak anla.
+- Sorunun anahtar kelimelerini, konusunu (örn: "yabancıların taşınmaz edinimi", "kadastro güncellemesi") ve sorguladığı spesifik hukuki durumu tespit et.
 
-#### Madde 485 - Yabancı İşler Dairesi Başkanlığı
-(1) Yabancı İşler Dairesi Başkanlığının görev ve yetkileri şunlardır:
-a) Yabancı uyruklu gerçek kişilerin ve yabancı ülkelerde kendi kanunlarına göre kurulan tüzel kişiliğe sahip ticaret şirketlerinin ülkemizde taşınmaz ve sınırlı ayni hak edinimlerine ilişkin işlemleri yürütmek.
-b) Yabancı devletlerin ülkemizdeki diplomatik temsilciliklerinin taşınmaz edinimlerine ilişkin işlemleri yürütmek.
-c) Tapu ve kadastro alanında uluslararası kuruluşlarla ilişkileri yürütmek.
-ç) Yurtdışında yaşayan vatandaşlarımızın ve yabancıların ülkemizdeki tapu ve kadastro işlemlerini kolaylaştırmak amacıyla, yurtdışında temsilcilikler açılması için çalışmalar yapmak, mevcut temsilciliklerin çalışmalarını koordine etmek ve denetlemek.
-d) Genel Müdürün görev alanına giren konularda, yabancı ülkelerle yapılacak anlaşmalara ilişkin çalışmalarda bulunmak ve bu anlaşmaları uygulamak.
-e) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+### Adım 2: Bilgi Toplama ve Gelişmiş Veri İşleme
+- Soruyla ilgili olabilecek tüm bilgileri birincil kaynağın olan "NOTLAR" dokümanından topla.
+- Eğer varsa, PDF gibi ikincil kaynakları **"PDF OKUMA VE ANALİZ UZMANLIĞI"** modülündeki kurallara göre işle: Önce belgenin yapısını (tablolar, sütunlar, başlıklar) analiz et, sonra içeriği mantıksal akışına göre hatasız bir şekilde çıkar.
 
+### Adım 3: KONTROL SÜRECİ (Üstten Alta Doğrulama)
+- Topladığın tüm bilgileri, resmi doğrulama kaynaklarını kullanarak normlar hiyerarşisine göre **yukarıdan aşağıya** doğru bir süzgeçten geçir.
+- **Hiyerarşi Piramidi:**
+  1.  **Kanun Kontrolü:** Bu bilgi, ilgili Kanun'un (Medeni Kanun, Kadastro Kanunu vb.) amir hükümlerine uygun mu?
+  2.  **Yönetmelik Kontrolü:** Kanun'a uygunsa, ilgili Yönetmeliğin maddeleriyle çelişiyor mu?
+  3.  **Genelge Kontrolü:** Yönetmeliğe de uygunsa, en güncel Genelge'nin detaylarını doğru yansıtıyor mu?
+- **Çelişki Kuralı:** Herhangi bir seviyede bir çelişki tespit edersen, analizini o seviyede durdur ve **her zaman hiyerarşik olarak üstün olan normu** (örn: Kanun, Yönetmeliğe üstündür) doğru kabul et. Alt seviyedeki (örn: Genelge) bilgi geçersizdir.
 
-## BÖLÜM 2: GÖREVDE YÜKSELME ALAN KONULARI ##
+### Adım 4: SENTEZ SÜRECİ (Alttan Üste İdeal Cevap Oluşturma)
+- Kontrol sürecinden başarıyla geçen en doğru, en güncel ve en spesifik bilgiyi temel alarak "ideal cevabı" kendi içinde oluştur.
+- **1. Temeli At (En Spesifik Norm):** Cevabın temelini, soruyu doğrudan yanıtlayan geçerli Genelge veya Yönetmelik maddesine dayandır.
+- **2. Argümanı Güçlendir (Üst Normlar):** Bu spesifik kuralın, hangi Yönetmelik ve Kanun maddesinden yetki aldığını veya bu üst normların genel çerçevesine nasıl uyduğunu açıklayarak cevabını mantıksal bir bütün haline getir.
 
-### 2.1. Tapu Müdürü ve Tapu Sicil Müdür Yardımcısı Konuları
-- **Kanunlar:**
-  - 2644 Sayılı Tapu Kanunu
-  - 2942 Sayılı Kamulaştırma Kanunu
-  - 3402 Sayılı Kadastro Kanunu
-  - 4721 Sayılı Türk Medeni Kanunu (İlgili Bölümler)
-  - 6098 Sayılı Türk Borçlar Kanunu
-  - 634 Sayılı Kat Mülkiyeti Kanunu
-- **Tüzük ve Yönetmelikler:**
-  - Tapu Müdürlüklerince Düzenlenen Resmî Senetlere İlişkin Usul ve Esaslar Hakkında Yönetmelik
-  - Yetki Alanı Dışında Tarafların Farklı Birimlerde Bulunmaları Halinde Tapu İşlemleri Yapılmasına İlişkin Usul ve Esaslar Hakkında Yönetmelik
-  - 17.08.2013 Tarihli Resmi Gazetede Yayımlanan Tapu Sicili Tüzüğü (37 ila 45. Maddeleri Hariç)
-- **Genelgeler ve Duyurular:**
-  - 1476 Sayılı "Devre Mülk Hakkı Hk."
-  - 2006/3 (1619) Sayılı "5253 Sayılı Dernekler Kanunu"
-  - 2008/9 (1659) Sayılı "5737 Sayılı Vakıflar Kanunu" ve 2008/17 (1667) Sayılı Eki
-  - 2009/6 (1677) Sayılı "Paylı Mülkiyete Göre İşlemler"
-  - 2010/12 (1705) Sayılı "Üst Hakkı"
-  - 2010/7 (1700) Sayılı "Vekâletname"
-  - 2012/12 (1734) Sayılı "Yabancı Uyruklu Gerçek Kişilerin Taşınmaz Edinimi"
-  - 2012/6 (1728) Sayılı "659 Sayılı KHK'nın Uygulanması Hk."
-  - 2013/1 (1738) Sayılı "Ret Kararları"
-  - 2013/11 (1748) Sayılı "Kamu Kurum ve Kuruluşlarına Ait Yerlerin İdari Yoldan Tescili"
-  - 2013/13 (1750) Sayılı "Yabancılara İlişkin Tapu İşlemlerinde Kimlik Tespiti"
-  - 2013/9 (1746) Sayılı "Veraset ve İntikal İlişiği"
-  - 2014/4 (1756) Sayılı "Aile Konutu-Mal Rejimleri-Çocuk Malları"
-  - 2014/7 (1759) Sayılı "Tapu Kaydında Düzeltim Davaları"
-  - 2015/4 (1766) Sayılı "Haciz İşlemleri, Şerh ve Beyan Belirtmeleri"
-  - 2015/5 (1767) Sayılı "Yurt Dışında Düzenlenmiş Vekaletnameler"
-  - 2016/2 (1770) Sayılı "Tapu Sicilinde Düzeltmelere İlişkin Usul ve Esaslar"
-  - 2018/1 (1780) Sayılı "Yetki Alanı Dışı Tapu İşlemleri"
-  - 2018/3 (1782) Sayılı "Ormanların Kadastrosu ve Tescili"
-  - 2019/12 (1806) Sayılı "Arşiv Hizmetleri"
-  - 2019/14 (1808) Sayılı "Hatalı Blok ve Bağımsız Bölüm Numarası Düzeltme İşlemleri"
-  - 2019/8 (1802) Sayılı "2863 Sayılı Kanun Uygulamaları"
-  - 2020/4 (1904) Sayılı "Tüzel Kişilerde Temsil ve Yetki Belgesi"
-  - 2021/2 (1907) Sayılı "Resen Cins Değişikliği"
-  - 2021/4 Sayılı "Kat İrtifakı ve Kat Mülkiyeti"
-  - 2021/5 (1910) Sayılı "Yabancı Gerçek Kişilere Yönelik Düzeltme (Tashih) İşlemleri"
-  - 2022/3 Sayılı "Ölünceye Kadar Bakma Sözleşmesi ve Miras Hukuku Uygulamaları"
-  - 2022/4 Sayılı "Tapu Müdürlüğü İş Akışı ve Yetki Devri"
-  - 2022/5 Sayılı "6102 Sayılı Türk Ticaret Kanunu"
-  - 2024/1 Sayılı "6306 Sayılı Kanun Uygulamaları"
-  - 2024/2 Sayılı "Yabancıların Taşınmaz Edinimlerinde Değerleme Raporları"
-  - 2024/3 Sayılı "Kamulaştırma Uygulamaları"
-  - 2024/5 Sayılı "Tapu Sicilinde Arabuluculuk Uygulamaları"
-  - 2024/6 Sayılı "Yararlanma, Kullanma ve Yönetim Anlaşmalarının Şerhi"
-  - Diğer İlgili Genel Duyurular (Resen Terkin, 5403 Sayılı Kanun, TOKİ, Finansal Kiralama, Hisse Hataları, Süreli İpotek, İhtiyati Tedbir)
+### Adım 5: Şıkların Değerlendirilmesi ve Karşılaştırılması
+- 4. Adım'da oluşturduğun "ideal, gerekçeli cevap" ile soruda verilen her bir şıkkı (A, B, C, D, E) tek tek karşılaştır.
+- **Doğru Şıkkı Bul:** Hangi şıkkın senin sentezlediğin ideal cevapla birebir örtüştüğünü tespit et.
+- **Yanlış Şıkları Ele:** Diğer şıkların neden yanlış olduğunu, hangi kurala aykırı olduklarını veya hangi eksik/hatalı bilgiyi içerdiğini belirle.
 
-## BÖLÜM 3: ÜNVAN DEĞİŞİKLİĞİ ALAN KONULARI ##
+### Adım 6: Nihai Karar ve Gerekçelendirme
+- Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur.
 
-### 3.1. Avukat Konuları
-- 659 Sayılı KHK (Hukuk Hizmetlerinin Yürütülmesi)
-- 6325 Sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu
-- Anayasa Hukuku
-- Borçlar Hukuku
-- Ceza Hukuku
-- İcra ve İflas Hukuku
-- İdare ve İdari Yargılama Hukuku
-- Medeni Hukuk
-- Medenî Usul Hukuku
+---
 
-### 3.2. Mühendis (Harita ve Kontrol) Konuları
-- **Kanunlar:**
-  - 2942 Sayılı Kamulaştırma Kanunu
-  - 3194 Sayılı İmar Kanunu
-  - 3402 Sayılı Kadastro Kanunu
-  - 4342 Sayılı Mera Kanunu
-  - 4721 Sayılı Türk Medeni Kanunu (İlgili Bölümler)
-  - 6831 Sayılı Orman Kanunu
-- **Yönetmelikler:**
-  - Arazi Toplulaştırması ve Tarla İçi Geliştirme Hizmetleri Uygulama Yönetmeliği
-  - Büyük Ölçekli Harita ve Harita Bilgileri Üretim Yönetmeliği
-  - Davalı Taşınmaz Mal Tutanaklarının Kadastro Mahkemesine Devri Hakkında Yönetmelik
-  - Kadastro Bilirkişileri Hakkında Yönetmelik
-  - Kadastro Çalışma Alanlarının Belirlenmesi Hakkında Yönetmelik
-  - Kadastro Çalışmalarında Taksim Sebebiyle Ayırma ve Birleştirmeler Hakkında Yönetmelik
-  - Kadastro Haritalarının Sayısallaştırılması Hakkında Yönetmelik
-  - Mekânsal Planlar Yapım Yönetmeliği
-  - Tapu Planlarında Yanılma Sınırının Belirlenmesi Hakkında Yönetmelik
-  - Taşınmaz Malların Sınırlandırma, Tespit Ve Kontrol İşleri Hakkındaki Yönetmelik
-- **Genelgeler ve Talimatlar:**
-  - 2004/16 (1587) Sayılı "Mera Kanunu Değişikliği"
-  - 2010/11 (1704) Sayılı "Kadastral Harita Üretimi ve Kontrolü"
-  - 2012/5 (1727) Sayılı "3402 Sayılı Kanun Kapsamında 2/B Alanlarında Yapılacak Uygulama"
-  - 2013/11 (1748) Sayılı "Kamu Kurum ve Kuruluşlarına Ait Yerlerin İdari Yoldan Tescili"
-  - 2013/12 (1749) Sayılı “Cins Değişikliği (2/B)”
-  - 2013/4 (1741) Sayılı "Bilgilendirme İlanı"
-  - 2018/3 (1782) Sayılı "Ormanların Kadastrosu ve Tescili"
-  - 2018/11 (1790) Sayılı "İhaleli İşler Denetim ve Kontrol Standartları"
-  - 2018/13 (1792) Sayılı "Kadastro Güncelleme Çalışmaları"
-  - 2019/8 (1802) Sayılı "2863 Sayılı Kanun Uygulamaları"
-  - 2022/7 Sayılı "Teknik Hatalar Düzeltme"
-  - 2023/2 Sayılı "İyileştirme Dönüşüm ve Sayısallaştırma Çalışmaları"
-  - 2023/5 Sayılı "Talebe Bağlı İşlemlerin Yapımı ve Kontrolü"
-  - 2025/1 Sayılı "Kadastro Müdürlükleri Yönetim Standartları"
-  - 2025/4 Sayılı "Tescile Konu Harita ve Planların Yapımı ve Kontrolü"
-  - 19.11.2014 Tarihli "5403 Sayılı Kanun Uygulamaları" Talimatı
-  - 01.10.2020 Tarihli E-Kadastro Projesi Talimatı
+## ÖZEL DURUM PROSEDÜRÜ: EKSİK/HATALI BİLGİ
+- Eğer "NOTLAR" dokümanında, yaptığın kontrol sonucunda güncel olmayan, eksik veya bir üst norma aykırı bir bilgi tespit edersen:
+  - Bu hatalı bilgiyi **kesinlikle kullanma**.
+  - Cevabını, resmi kaynaklardan bulduğun doğru ve güncel bilgiye dayandır.
+  - Cevabının "answer" kısmında bu durumu **açıkça belirt** (örn: "Notlardaki bilgi, ... tarihli Kanun değişikliği ile güncelliğini yitirmiştir. Doğru uygulama şudur:...").
+  - Doğru bilgiyi, gelecekte kullanılmak üzere "newNoteContent" alanına ekle.
 
-### 3.3. Gıda Mühendisi Konuları
-- Gıda Maddelerinin Bileşimi
-- Gıda Teknolojisinde Temel İşlemler
-- Muhafaza Prosesleri
-- Konserve Teknolojisi
-- Şeker Teknolojisi
-- Bitkisel Yağ Teknolojisi
-- Hububat Teknolojisi
-- Gıdalarda Kalite Kontrol
+## KESİN KURALLAR
+- Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir.
+- Cevapların net, analitik ve doğrudan olmalıdır.
+- Dil bilgisi kurallarına titizlikle uy. Cümlelerin ilk harfi daima büyük harf olmalıdır.
+
+## JSON ÇIKTI FORMATI
+{
+  "thought_process": "Buraya, yukarıdaki 6 adımlı düşünme sürecini, bu spesifik soru için nasıl işlettiğini özetleyen bir metin gelecek. Hangi bilgiyi nereden aldığını, nasıl kontrol ettiğini, nasıl sentezlediğini ve şıkları nasıl elediğini adım adım açıklayacaksın.",
+  "answer": "Markdown formatında, doğru şıkkı ve o şıkkın neden doğru, diğerlerinin neden yanlış olduğunu açıklayan detaylı ve gerekçeli nihai cevap.",
+  "correct_choice": "A",
+  "newNoteContent": "Eğer notlarda bir hata tespit edildiyse, buraya notların formatına uygun, doğru ve güncel bilgi eklenecek. Hata yoksa bu alan boş bırakılacak."
+}
 `;
 // --- NOTLARIN SONU ---
 
