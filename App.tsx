@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { getAnswerFromNotes, categorizeUpdate } from './services/geminiService';
 import Spinner from './components/Spinner';
@@ -291,8 +290,6 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parsedNotes = useMemo(() => parseNotes(currentNotes), [currentNotes]);
-  const examCategories = useMemo(() => Object.keys(parsedNotes).filter(k => k !== 'Ortak Konular'), [parsedNotes]);
-  const [selectedExam, setSelectedExam] = useState<string>('Mühendis (Harita ve Kontrol)');
   
   const processImageFile = async (file: File) => {
      if (file.size > 16 * 1024 * 1024) { 
@@ -336,7 +333,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setAnswer('');
 
-    const notesForPrompt = (parsedNotes['Ortak Konular'] || '') + '\n\n' + (parsedNotes[selectedExam] || '');
+    const notesForPrompt = currentNotes;
 
     try {
       const result = await getAnswerFromNotes(notesForPrompt, question, image ? { data: image.base64, mimeType: image.mimeType } : undefined);
@@ -364,7 +361,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [question, image, isLoading, currentNotes, selectedExam, parsedNotes]);
+  }, [question, image, isLoading, currentNotes, parsedNotes]);
 
   useEffect(() => {
     if (answerRef.current) {
@@ -390,26 +387,6 @@ const App: React.FC = () => {
           <div className="py-6">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                 <div className="mb-4">
-                    <label htmlFor="exam-select" className="block text-sm font-medium text-slate-700 mb-1">
-                      Sınav Alanınızı Seçin:
-                    </label>
-                    <select
-                      id="exam-select"
-                      name="exam"
-                      className="w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white text-black"
-                      value={selectedExam}
-                      onChange={(e) => setSelectedExam(e.target.value)}
-                      aria-label="Sınav Alanı Seçimi"
-                    >
-                      {examCategories.map(category => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
                 <form onSubmit={handleSubmit}>
                   <div className="relative">
                     <textarea
