@@ -1,5 +1,4 @@
-TKGM Görevde Yükselme Sınav Asistanı 🎓
-![TKGM Sınav Asistanı Logosu](./logo.svg)
+TKGM Görevde Yükselme Sınav Asistanı 🎓 ![TKGM Sınav Asistanı Logosu](./logo.svg)
 <img src="./logo.svg" alt="TKGM Sınav Asistanı Logosu" style="width:24px; height:24px; vertical-align: middle;">
 ======
 
