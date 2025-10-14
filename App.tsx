@@ -50,6 +50,47 @@ Bu notlar, Tapu ve Kadastro Genel Müdürlüğü'nün 2025 yılı için ilan ett
 - **Resmi Yazışmalarda Uygulanacak Usul Ve Esaslar Hakkında Yönetmelik**
 - **4 Sayılı Cumhurbaşkanlığı Kararnamesi (TKGM ile ilgili 478 ila 488. Maddeleri)**
 
+### 4 Sayılı Cumhurbaşkanlığı Kararnamesi Detayları (TKGM İlgili Daire Başkanlıkları)
+
+#### Madde 482 - Tapu Dairesi Başkanlığı
+(1) Tapu Dairesi Başkanlığının görev ve yetkileri şunlardır:
+a) Tapu sicil ve kayıtlarının mevzuata uygun olarak tutulmasını sağlamak, bu amaçla gerekli tedbirleri almak.
+b) Akde ve tescile ilişkin her türlü işlemi yapmak, yaptırmak ve denetlemek.
+c) Gerçek ve tüzel kişilerin mülkiyet ve mülkiyetin gayri ayni haklarına ilişkin her türlü akit ve tescil işlerini yapmak veya yaptırmak.
+ç) Devletin sorumluluğunda bulunan tapu sicillerinin düzenli bir şekilde tutulmasını, aleniyetini sağlamak.
+d) Sahteciliğe konu olan tapu sicil ve belgelerinin idari ve adli mercilere intikalini sağlamak ve takibini yapmak.
+e) Yabancı uyruklu gerçek ve tüzel kişilerin ülkedeki tapu ve kadastro işlemlerini yapmak, yaptırmak, mevzuat çerçevesinde tutulması gereken kayıtları tutmak, istatistiki bilgileri derlemek ve ilgili kurum ve kuruluşlara göndermek.
+f) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+
+#### Madde 483 - Kadastro Dairesi Başkanlığı
+(1) Kadastro Dairesi Başkanlığının görev ve yetkileri şunlardır:
+a) Ülkenin kadastrosunu yapmak, yaptırmak, denetlemek, tescil ve arşivleme işlemlerini yapmak veya yaptırmak.
+b) Yenileme ve güncelleme çalışmalarını yapmak veya yaptırmak.
+c) Tescile konu her türlü plan ve teknik içerikli belgelerin kontrolünü yapmak veya yaptırmak.
+ç) Tapu planlarının teknik yönden reddine dair müdürlüklerce verilen kararlara karşı yapılan itirazları inceleyerek Genel Müdürlük görüşünü hazırlamak.
+d) Kadastro ve tapu ile ilgili teknik uyuşmazlıklarda mahkemelere ve diğer kamu kurum ve kuruluşlarına teknik bilirkişi hizmeti vermek veya verdirmek.
+e) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+
+#### Madde 484 - Harita Dairesi Başkanlığı
+(1) Harita Dairesi Başkanlığının görev ve yetkileri şunlardır:
+a) Ülke jeodezik altyapısını oluşturmak, geliştirmek, yenilemek, hizmete sunmak.
+b) Büyük ölçekli harita ve harita bilgilerinin üretimini yapmak, yaptırmak ve denetlemek.
+c) Hava fotoğrafları ve uydu görüntülerini temin etmek, fotogrametrik ve yersel yöntemlerle harita ve harita bilgileri üretmek.
+ç) Ulusal coğrafi bilgi sisteminin altyapısını oluşturmaya yönelik çalışmalar yapmak.
+d) Harita ve harita bilgisi üretim standartlarını belirlemek.
+e) Harita, plan, hava fotoğrafı, uydu görüntüsü ve diğer teknik belgelerin arşivlenmesini, korunmasını ve faydalanılmasını sağlamak.
+f) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+
+#### Madde 485 - Yabancı İşler Dairesi Başkanlığı
+(1) Yabancı İşler Dairesi Başkanlığının görev ve yetkileri şunlardır:
+a) Yabancı uyruklu gerçek kişilerin ve yabancı ülkelerde kendi kanunlarına göre kurulan tüzel kişiliğe sahip ticaret şirketlerinin ülkemizde taşınmaz ve sınırlı ayni hak edinimlerine ilişkin işlemleri yürütmek.
+b) Yabancı devletlerin ülkemizdeki diplomatik temsilciliklerinin taşınmaz edinimlerine ilişkin işlemleri yürütmek.
+c) Tapu ve kadastro alanında uluslararası kuruluşlarla ilişkileri yürütmek.
+ç) Yurtdışında yaşayan vatandaşlarımızın ve yabancıların ülkemizdeki tapu ve kadastro işlemlerini kolaylaştırmak amacıyla, yurtdışında temsilcilikler açılması için çalışmalar yapmak, mevcut temsilciliklerin çalışmalarını koordine etmek ve denetlemek.
+d) Genel Müdürün görev alanına giren konularda, yabancı ülkelerle yapılacak anlaşmalara ilişkin çalışmalarda bulunmak ve bu anlaşmaları uygulamak.
+e) Genel Müdür tarafından verilen benzeri görevleri yapmak.
+
+
 ## BÖLÜM 2: GÖREVDE YÜKSELME ALAN KONULARI ##
 
 ### 2.1. Tapu Müdürü ve Tapu Sicil Müdür Yardımcısı Konuları
@@ -225,7 +266,6 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
       role="dialog"
       aria-modal="true"
       aria-labelledby="license-title"
-      // FIX: Corrected typo from `onclose` to `onClose` to match the prop name.
       onClick={onClose}
     >
       <div 
