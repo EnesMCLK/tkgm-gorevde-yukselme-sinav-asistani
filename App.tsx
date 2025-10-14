@@ -298,6 +298,82 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
   );
 };
 
+const CameraModal: React.FC<{ onClose: () => void; onCapture: (file: File) => void; }> = ({ onClose, onCapture }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Camera access error:", err);
+        setError("Kameraya erişilemedi. Lütfen tarayıcı izinlerinizi kontrol edin.");
+      }
+    };
+    startCamera();
+    return () => {
+      stream?.getTracks().forEach(track => track.stop());
+    };
+  }, []);
+
+  const handleCapture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const imageFile = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            onCapture(imageFile);
+          }
+        }, 'image/jpeg');
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4" role="dialog" aria-modal="true" aria-labelledby="camera-title" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <header className="p-4 border-b flex justify-between items-center">
+          <h2 id="camera-title" className="text-lg font-bold text-slate-800">Fotoğraf Çek</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </header>
+        <div className="p-4 flex-grow bg-slate-900 flex justify-center items-center">
+          {error ? (
+            <p className="text-red-400 text-center">{error}</p>
+          ) : (
+            <video ref={videoRef} autoPlay playsInline className="w-full h-auto max-h-[60vh] rounded" />
+          )}
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+        <footer className="p-4 border-t flex justify-center">
+          <button 
+            onClick={handleCapture} 
+            disabled={!!error}
+            className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <span>Fotoğrafı Çek</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+
 const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
   const [image, setImage] = useState<{ file: File; base64: string; mimeType: string; } | null>(null);
@@ -305,17 +381,16 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentNotes, setCurrentNotes] = useState<string>(initialNotes);
   const [isLicenseVisible, setIsLicenseVisible] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const answerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parsedNotes = useMemo(() => parseNotes(currentNotes), [currentNotes]);
   const examCategories = useMemo(() => Object.keys(parsedNotes).filter(k => k !== 'Ortak Konular'), [parsedNotes]);
   const [selectedExam, setSelectedExam] = useState<string>('Mühendis (Harita ve Kontrol)');
-
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 16 * 1024 * 1024) { 
+  
+  const processImageFile = async (file: File) => {
+     if (file.size > 16 * 1024 * 1024) { 
         alert("Dosya boyutu 16MB'tan büyük olamaz.");
         return;
       }
@@ -326,6 +401,19 @@ const App: React.FC = () => {
         console.error("Görsel dönüştürme hatası:", error);
         alert("Görsel yüklenirken bir hata oluştu.");
       }
+  };
+
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await processImageFile(file);
+    }
+  };
+  
+  const handleCapture = async (file: File) => {
+    if (file) {
+      await processImageFile(file);
+      setIsCameraOpen(false);
     }
   };
 
@@ -354,7 +442,6 @@ const App: React.FC = () => {
         console.log("Yeni not içeriği tespit edildi. Notlar güncelleniyor.");
         const relevantCategory = await categorizeUpdate(question, Object.keys(parsedNotes));
         
-        // Find the full content of the category to append to
         const categoryContent = parsedNotes[relevantCategory];
         
         if (categoryContent) {
@@ -390,6 +477,7 @@ const App: React.FC = () => {
   return (
     <>
       {isLicenseVisible && <LicenseModal onClose={() => setIsLicenseVisible(false)} content={licenseText} />}
+      {isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />}
       <div className="flex flex-col min-h-screen">
         <Header />
 
@@ -439,15 +527,22 @@ const App: React.FC = () => {
                       </svg>
                     </button>
                   </div>
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center space-x-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100" disabled={isLoading}>
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50" disabled={isLoading}>
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                         </svg>
                         Görsel Ekle
                       </button>
+                       <button type="button" onClick={() => setIsCameraOpen(true)} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50" disabled={isLoading}>
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                           <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                         </svg>
+                        Fotoğraf Çek
+                      </button>
                       <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
+                      </div>
                       {image && (
                         <div className="flex items-center space-x-2 text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
                           <span className="min-w-0 break-all">{image.file.name}</span>
@@ -456,7 +551,6 @@ const App: React.FC = () => {
                           </button>
                         </div>
                       )}
-                    </div>
                   </div>
                 </form>
               </div>
