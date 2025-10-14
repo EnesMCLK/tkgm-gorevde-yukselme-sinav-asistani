@@ -87,5 +87,18 @@ Bu proje, [Apache 2.0 Lisansı](LICENSE) altında lisanslanmıştır.
 
 ---
 
-### **Yasal Uyarı**
-Bu yapay zeka asistanı, yalnızca sınava hazırlık sürecine yardımcı olmak amacıyla geliştirilmiş bir **eğitim aracıdır**. Sağlanan bilgiler hukuki tavsiye niteliği taşımaz. Her durumda, güncel ve resmi mevzuat metinlerine başvurulması esastır. Proje, bilgilerin doğruluğu konusunda herhangi bir yasal sorumluluk kabul etmez.
+## Yasal Uyarı ve Sorumluluk Reddi
+
+Bu belge, projenin kullanımıyla ilgili önemli yasal bilgilendirmeleri ve sorumluluk sınırlarını içerir.
+
+---
+
+### ⚖️ Kaynak İçerik: Telif Hakkı ve Fikri Mülkiyet
+
+> Bu yapay zeka asistanının dayandığı orijinal metin içeriğinin (yasa maddeleri, yönetmelikler, tebliğler ve diğer kaynak dokümanlar) **telif hakkı**, ilgili kanunları hazırlayan kişi ve kurumlara aittir.
+
+### 💻 Yazılım Bilgisi ve Sorumluluk Reddi
+
+> Yapay Zeka Asistanının kullanım hakları ve telifleri, **Google LLC'nin** kullanım politikaları tarafından korunmaktadır ve bu politikalara tabidir.
+
+> Bu yazılımın geliştiricisi, yazılımın kullanımından veya kullanılamamasından kaynaklanan (kâr kaybı, iş kesintisi, bilgi kaybı veya diğer maddi kayıplar dahil ancak bunlarla sınırlı olmamak üzere) doğrudan, dolaylı, arızi, özel, örnek veya sonuç olarak ortaya çıkan zararlardan, bu tür zararların olasılığı bildirilmiş olsa bile, **sorumlu tutulamaz**.
