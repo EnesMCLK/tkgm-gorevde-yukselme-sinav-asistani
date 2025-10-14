@@ -1,4 +1,4 @@
-TKGM Görevde Yükselme Sınav Asistanı 🎓 <img src="./logo.svg" alt="TKGM Sınav Asistanı Logosu" style="width:24px; height:24px; vertical-align: middle;">
+Bude Yükselme Sınav Asistanı 🎓 <img src="./logo.svg" alt="TKGM Sınav Asistanı Logosu" style="width:24px; height:24px; vertical-align: middle;">
 ======
 
 Bu proje, **Tapu ve Kadastro Genel Müdürlüğü (TKGM)** personelinin **Görevde Yükselme ve Unvan Değişikliği Sınavı**'na hazırlanmalarına yardımcı olmak amacıyla geliştirilmiş, yapay zeka tabanlı bir bilgi asistanıdır. Asistan, sınav kapsamında yer alan karmaşık ve sürekli güncellenen Türk mevzuatını anlama, yorumlama ve en doğru bilgiyi sunma üzerine tasarlanmıştır.
@@ -81,11 +81,7 @@ Bu proje, TKGM personeli için değerli bir kaynak olma potansiyeline sahiptir. 
 
 Hata bildirimleri ve özellik talepleri için lütfen GitHub **Issues** bölümünü kullanın.
 
-## 📄 Lisans
-
-Bu proje, [Apache 2.0 Lisansı](LICENSE) altında lisanslanmıştır.
-
----
+----
 
 ## Yasal Uyarı ve Sorumluluk Reddi
 
