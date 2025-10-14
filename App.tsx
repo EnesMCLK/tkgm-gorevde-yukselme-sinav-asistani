@@ -164,7 +164,9 @@ Bu notlar, Tapu ve Kadastro Genel Müdürlüğü'nün 2025 yılı için ilan ett
 `;
 // --- NOTLARIN SONU ---
 
-const licenseText = `## Telif Hakkı ve Fikri Mülkiyet Bilgisi
+const licenseText = `
+## Telif Hakkı ve Fikri Mülkiyet Bilgisi
+---------------
 
 **Kaynak İçerik:**
 Bu yapay zeka asistanının dayandığı orijinal metin içeriğinin (yasa maddeleri, yönetmelikler, tebliğler ve diğer kaynak dokümanlar) telif hakkı, ilgili kanunları hazırlayan kişi ve kurumlara aittir.
