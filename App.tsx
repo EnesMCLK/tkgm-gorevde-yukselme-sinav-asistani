@@ -100,14 +100,7 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 - Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir.
 - Cevapların net, analitik ve doğrudan olmalıdır.
 - Dil bilgisi kurallarına titizlikle uy. Cümlelerin ilk harfi daima büyük harf olmalıdır.
-
-## JSON ÇIKTI FORMATI
-{
-  "thought_process": "Buraya, yukarıdaki 6 adımlı düşünme sürecini, bu spesifik soru için nasıl işlettiğini özetleyen bir metin gelecek. Hangi bilgiyi nereden aldığını, nasıl kontrol ettiğini, nasıl sentezlediğini ve şıkları nasıl elediğini adım adım açıklayacaksın.",
-  "answer": "Markdown formatında, doğru şıkkı ve o şıkkın neden doğru, diğerlerinin neden yanlış olduğunu açıklayan detaylı ve gerekçeli nihai cevap.",
-  "correct_choice": "A",
-  "newNoteContent": "Eğer notlarda bir hata tespit edildiyse, buraya notların formatına uygun, doğru ve güncel bilgi eklenecek. Hata yoksa bu alan boş bırakılacak."
-}`;
+`;
 // --- NOTLARIN SONU ---
 
 const licenseText = `
@@ -163,7 +156,6 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
         <div className="p-6 overflow-y-auto">
           <div 
             className="prose prose-sm prose-zinc max-w-none" 
-            style={{ color: 'black' }}
             dangerouslySetInnerHTML={{ __html: htmlContent }} 
           />
         </div>
@@ -524,7 +516,6 @@ const App: React.FC = () => {
                       <div
                           ref={answerRef}
                           className="prose prose-zinc max-w-none border-t border-slate-200 pt-6"
-                          style={{ color: 'black' }}
                           dangerouslySetInnerHTML={{ __html: answer }}
                       />
                       <div className="mt-8 pt-4 border-t border-slate-200">

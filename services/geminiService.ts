@@ -54,6 +54,8 @@ export const getAnswerFromNotes = async (
   signal?: AbortSignal
 ): Promise<GeminiResponse> => {
   try {
+    const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
+    
     // --- STAGE 1: RESEARCH with gemini-2.5-pro ---
     const researchPrompt = `
 # GÖREV: HUKUKİ ARAŞTIRMA VE DOĞRULAMA ASİSTANI
@@ -83,7 +85,7 @@ ${notes}
 
 ---
 # SORU
-${question}
+${question}${imageInstruction}
 `;
     
     const researchSchema = {
@@ -156,7 +158,7 @@ ${researchSummary}
 
 ---
 # SORU
-${question}
+${question}${imageInstruction}
 `;
 
     const synthesisSchema = {
