@@ -7,6 +7,13 @@ import { marked } from 'marked';
 type ProcessStatus = 'idle' | 'running' | 'success' | 'cancelled' | 'error';
 type FeedbackStatus = 'idle' | 'positive' | 'negative';
 
+declare global {
+  interface Window {
+    va: (command: string, eventName: string, data?: Record<string, any>) => void;
+    vaq: any[];
+  }
+}
+
 const Header: React.FC = () => (
   <header className="bg-white shadow-md">
     <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center space-x-3">
@@ -104,9 +111,6 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 // --- NOTLARIN SONU ---
 
 const licenseText = `
-## Telif Hakkı ve Fikri Mülkiyet Bilgisi
----------------
-
 **Kaynak İçerik:**
 Bu yapay zeka asistanının dayandığı orijinal metin içeriğinin (yasa maddeleri, yönetmelikler, tebliğler ve diğer kaynak dokümanlar) telif hakkı, ilgili kanunları hazırlayan kişi ve kurumlara aittir.
 
@@ -148,7 +152,7 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
         onClick={(e) => e.stopPropagation()}
       >
         <header className="p-4 border-b flex justify-between items-center">
-          <h2 id="license-title" className="text-lg font-bold text-slate-800">Telif Hakkı & Lisans</h2>
+          <h2 id="license-title" className="text-lg font-bold text-slate-800">Telif Hakkı & Fikri Mülkiyet</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
@@ -263,6 +267,7 @@ const App: React.FC = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const submissionControllerRef = useRef<AbortController | null>(null);
   const submittedQuestionRef = useRef<string>('');
+  const rawAnswerRef = useRef<string>('');
 
   const thinkingSteps = [
     'Sorunuz analiz ediliyor ve ilgili kaynaklar belirleniyor.',
@@ -341,6 +346,8 @@ const App: React.FC = () => {
         image ? { data: image.base64, mimeType: image.mimeType } : undefined,
         signal
       );
+      
+      rawAnswerRef.current = result.answer; // Ham cevabı ileride kullanmak üzere sakla
 
       let newNotesContent = currentNotes;
       if (result.newNoteContent) {
@@ -374,14 +381,24 @@ const App: React.FC = () => {
   
   const handlePositiveFeedback = useCallback(() => {
     setFeedbackStatus('positive');
-    // Gelecekte bu geri bildirim bir sunucuya gönderilebilir.
-    // fetch('/api/feedback', { method: 'POST', body: JSON.stringify({ question: submittedQuestionRef.current, answer, feedback: 'positive' }) });
+    if (window.va) {
+        window.va('event', 'Feedback', { 
+          feedback: 'positive', 
+          question: submittedQuestionRef.current,
+          answer: rawAnswerRef.current
+        });
+    }
   }, []);
 
   const handleNegativeFeedback = useCallback(() => {
     setFeedbackStatus('negative');
-    // Gelecekte bu geri bildirim bir sunucuya gönderilebilir.
-    // fetch('/api/feedback', { method: 'POST', body: JSON.stringify({ question: submittedQuestionRef.current, answer, feedback: 'negative' }) });
+    if (window.va) {
+      window.va('event', 'Feedback', { 
+        feedback: 'negative', 
+        question: submittedQuestionRef.current,
+        answer: rawAnswerRef.current
+      });
+    }
   }, []);
 
 
@@ -569,7 +586,7 @@ const App: React.FC = () => {
           <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
             <p>Bu asistan, yalnızca çalışma amacıyla kullanılan bir yapay zeka uygulamasıdır.</p>
             <button onClick={() => setIsLicenseVisible(true)} className="text-blue-600 hover:underline">
-              Telif Hakkı & Lisans Bildirimi
+              Telif Hakkı & Fikri Mülkiyet Bildirimi
             </button>
           </div>
         </footer>

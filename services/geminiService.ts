@@ -123,7 +123,7 @@ ${question}${imageInstruction}
         throw new DOMException('The operation was aborted.', 'AbortError');
     }
 
-    // --- STAGE 2: SYNTHESIS with gemini-2.5-flash ---
+    // --- STAGE 2: SYNTHESIS with gemini-2.5-pro ---
     const synthesisPrompt = `
 # ROL VE HEDEF
 Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) sınav sorularını cevaplayan uzman bir yapay zeka asistanısın. Görevin, sana sunulan "ARAŞTIRMA ÖZETİ" içindeki önceden doğrulanmış hukuki bilgileri kullanarak, soruyu analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir. **Sadece ve sadece sana verilen araştırma özetini kullanabilirsin.**
@@ -181,7 +181,7 @@ ${question}${imageInstruction}
     }
 
     const synthesisResponse = await callGemini({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         contents: synthesisRequestContents,
         config: {
             responseMimeType: "application/json",
