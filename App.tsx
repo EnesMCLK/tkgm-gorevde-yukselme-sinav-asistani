@@ -1,7 +1,11 @@
+
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { getAnswerFromNotes, categorizeUpdate } from './services/geminiService';
-import Spinner from './components/Spinner';
+import { getAnswerFromNotes } from './services/geminiService';
+import ThinkingProcess from './components/ThinkingProcess';
 import { marked } from 'marked';
+
+type ProcessStatus = 'idle' | 'running' | 'success' | 'cancelled' | 'error';
+type FeedbackStatus = 'idle' | 'positive' | 'negative';
 
 const Header: React.FC = () => (
   <header className="bg-white shadow-md">
@@ -84,7 +88,7 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 - **Yanlış Şıkları Ele:** Diğer şıkların neden yanlış olduğunu, hangi kurala aykırı olduklarını veya hangi eksik/hatalı bilgiyi içerdiğini belirle.
 
 ### Adım 6: Nihai Karar ve Gerekçelendirme
-- Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken **büyük harfle başlarayak yazım kurarllarına titizlikle uygula.**
+- Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken **büyük harfle başlarayak yazım kurarllarına titizlikle uygula.**
 
 ---
 
@@ -122,29 +126,6 @@ Yapay Zeka Asistanının kullanım hakları ve telifleri, Google LLC'nin kullan�
 
 Bu yazılımın geliştiricisi, yazılımın kullanımından veya kullanılamamasından kaynaklanan (kâr kaybı, iş kesintisi, bilgi kaybı veya diğer maddi kayıplar dahil ancak bunlarla sınırlı olmamak üzere) doğrudan, dolaylı, arızi, özel, örnek veya sonuç olarak ortaya çıkan zararlardan, bu tür zararların olasılığı bildirilmiş olsa bile, sorumlu tutulamaz.
 `;
-
-const parseNotes = (notes: string): Record<string, string> => {
-  const sections = notes.split(/(?=^## BÖLÜM \d:|^### \d\.\d\.)/m);
-  const parsedNotes: Record<string, string> = {};
-  if (sections.length > 0 && sections[0].trim() === "") sections.shift();
-
-  sections.forEach(section => {
-    const titleLine = section.split('\n')[0];
-    if (titleLine.includes('BÖLÜM 1: ORTAK KONULAR')) {
-      parsedNotes['Ortak Konular'] = section;
-    } else if (titleLine.includes('Tapu Müdürü')) {
-      parsedNotes['Tapu Müdürü ve Tapu Sicil Müdür Yardımcısı'] = section;
-    } else if (titleLine.includes('Avukat Konuları')) {
-      parsedNotes['Avukat'] = section;
-    } else if (titleLine.includes('Mühendis (Harita ve Kontrol)')) {
-      parsedNotes['Mühendis (Harita ve Kontrol)'] = section;
-    } else if (titleLine.includes('Gıda Mühendisi')) {
-      parsedNotes['Gıda Mühendisi'] = section;
-    }
-  });
-  return parsedNotes;
-};
-
 
 const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onClose, content }) => {
   const [htmlContent, setHtmlContent] = useState('');
@@ -283,15 +264,26 @@ const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
   const [image, setImage] = useState<{ file: File; base64: string; mimeType: string; } | null>(null);
   const [answer, setAnswer] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [processStatus, setProcessStatus] = useState<ProcessStatus>('idle');
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('idle');
   const [currentNotes, setCurrentNotes] = useState<string>(initialNotes);
   const [isLicenseVisible, setIsLicenseVisible] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  
   const answerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const submissionControllerRef = useRef<AbortController | null>(null);
+  const submittedQuestionRef = useRef<string>('');
 
-  const parsedNotes = useMemo(() => parseNotes(currentNotes), [currentNotes]);
-  
+  const thinkingSteps = [
+    'Sorunuz analiz ediliyor ve ilgili kaynaklar belirleniyor.',
+    'Bilgiler resmi mevzuat (Kanun, Yönetmelik, Genelge) ile karşılaştırılıyor.',
+    'Olası eksik veya güncel olmayan bilgiler kontrol ediliyor.',
+    'Normlar hiyerarşisine göre en doğru cevap sentezleniyor.',
+    'Gerekçeli ve kaynak gösterilmiş nihai cevap oluşturuluyor.',
+  ];
+
   const processImageFile = async (file: File) => {
      if (file.size > 16 * 1024 * 1024) { 
         alert("Dosya boyutu 16MB'tan büyük olamaz.");
@@ -320,55 +312,104 @@ const App: React.FC = () => {
     }
   };
 
-  const removeImage = () => {
+  const removeImage = useCallback(() => {
     setImage(null);
     if(fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    // "Anında durdurma" hissi için, API isteğini iptal et ve arayüz durumunu
+    // bu senkron olay yöneticisi içinde hemen güncelle.
+    // 'running' durumu kontrolü, işlem kullanıcı iptal etmeden hemen önce biterse
+    // oluşabilecek yarış koşullarını (race condition) önler.
+    if (processStatus === 'running') {
+      submissionControllerRef.current?.abort();
+      setProcessStatus('cancelled');
+      setQuestion('');
+      removeImage();
+    }
+  }, [processStatus, removeImage]);
 
   const handleSubmit = useCallback(async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (!question.trim() || isLoading) return;
+    if (processStatus === 'running') return;
+    const questionToSubmit = question.trim();
+    if (!questionToSubmit) return;
 
-    setIsLoading(true);
+    submissionControllerRef.current = new AbortController();
+    const signal = submissionControllerRef.current.signal;
+    submittedQuestionRef.current = questionToSubmit;
+    
+    setProcessStatus('running');
     setAnswer('');
-
-    const notesForPrompt = currentNotes;
+    setFeedbackStatus('idle'); // Her yeni sorguda geri bildirimi sıfırla
 
     try {
-      const result = await getAnswerFromNotes(notesForPrompt, question, image ? { data: image.base64, mimeType: image.mimeType } : undefined);
-      const formattedAnswer = await marked.parse(result.answer);
-      setAnswer(formattedAnswer);
+      const result = await getAnswerFromNotes(
+        currentNotes, 
+        questionToSubmit, 
+        image ? { data: image.base64, mimeType: image.mimeType } : undefined,
+        signal
+      );
 
+      let newNotesContent = currentNotes;
       if (result.newNoteContent) {
-        console.log("Yeni not içeriği tespit edildi. Notlar güncelleniyor.");
-        const relevantCategory = await categorizeUpdate(question, Object.keys(parsedNotes));
-        
-        const categoryContent = parsedNotes[relevantCategory];
-        
-        if (categoryContent) {
-           const updatedCategoryContent = `${categoryContent}\n\n${result.newNoteContent}`;
-           const newNotes = currentNotes.replace(categoryContent, updatedCategoryContent);
-           setCurrentNotes(newNotes);
-           console.log(`'${relevantCategory}' kategorisi güncellendi.`);
-        } else {
-           console.warn("İlgili kategori bulunamadı, notlar güncellenmedi.");
-        }
+        // Kullanıcının isteği üzerine kategoriye ayırma kaldırıldı.
+        // Yeni bilgi, notların sonuna bir başlık ile eklenir.
+        newNotesContent = `${currentNotes}\n\n---\n\n## YENİ BİLGİ GÜNCELLEMESİ\n\n${result.newNoteContent}`;
       }
+      
+      const formattedAnswer = await marked.parse(result.answer);
+      
+      setAnswer(formattedAnswer);
+      if (newNotesContent !== currentNotes) {
+        setCurrentNotes(newNotesContent);
+      }
+      setProcessStatus('success');
+
     } catch (error) {
-      console.error(error);
-      setAnswer("<p class='text-red-500'>Bir hata oluştu. Lütfen tekrar deneyin.</p>");
-    } finally {
-      setIsLoading(false);
+      if (error instanceof Error && error.name === 'AbortError') {
+        // İptal işlemi kullanıcı tarafından handleCancel içinde başlatıldı.
+        // Arayüz durumu anında geri bildirim için orada zaten güncellendi.
+        // Burada sadece isteğin başarıyla iptal edildiğini log'luyoruz.
+        console.log("İstek başarıyla iptal edildi ve yakalandı.");
+      } else {
+        // Beklenmedik, iptal dışı hataları yönet.
+        console.error("Sistem hatası:", error);
+        setProcessStatus('error');
+        setQuestion(submittedQuestionRef.current); // Kullanıcının sorusunu koru
+      }
     }
-  }, [question, image, isLoading, currentNotes, parsedNotes]);
+  }, [question, image, currentNotes, processStatus]);
+  
+  const handlePositiveFeedback = useCallback(() => {
+    setFeedbackStatus('positive');
+    // Gelecekte bu geri bildirim bir sunucuya gönderilebilir.
+    // fetch('/api/feedback', { method: 'POST', body: JSON.stringify({ question: submittedQuestionRef.current, answer, feedback: 'positive' }) });
+  }, []);
+
+  const handleNegativeFeedback = useCallback(() => {
+    setFeedbackStatus('negative');
+    // Gelecekte bu geri bildirim bir sunucuya gönderilebilir.
+    // fetch('/api/feedback', { method: 'POST', body: JSON.stringify({ question: submittedQuestionRef.current, answer, feedback: 'negative' }) });
+  }, []);
+
 
   useEffect(() => {
-    if (answerRef.current) {
-      answerRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (processStatus === 'success' && answer && answerRef.current) {
+      answerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [answer]);
+  }, [processStatus, answer]);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [question]);
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -376,6 +417,8 @@ const App: React.FC = () => {
       handleSubmit();
     }
   };
+  
+  const isLoading = processStatus === 'running';
 
   return (
     <>
@@ -391,24 +434,40 @@ const App: React.FC = () => {
                 <form onSubmit={handleSubmit}>
                   <div className="relative">
                     <textarea
+                      ref={textareaRef}
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Sorunuzu buraya yazın... (Örn: Kamulaştırma Kanunu'na göre 'acele kamulaştırma' hangi durumlarda uygulanır?)"
-                      className="w-full h-48 p-4 pr-12 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black"
+                      className="w-full min-h-48 p-4 pr-16 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black overflow-y-hidden"
                       aria-label="Soru"
                       disabled={isLoading}
                     />
-                    <button
-                      type="submit"
-                      className="absolute top-1/2 right-3 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      disabled={isLoading || !question.trim()}
-                      aria-label="Soruyu gönder"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
+                    <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                      {isLoading ? (
+                         <button
+                          type="button"
+                          onClick={handleCancel}
+                          className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform duration-75 active:scale-90"
+                          aria-label="Durdur"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                             <rect x="4" y="4" width="12" height="12" rx="1.5" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform duration-75 active:scale-90"
+                          disabled={!question.trim()}
+                          aria-label="Soruyu gönder"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center space-x-2">
@@ -440,17 +499,79 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          {(isLoading || answer) && (
+          {processStatus !== 'idle' && (
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                {isLoading ? (
-                  <Spinner />
+              <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px] flex items-center justify-center">
+                { (processStatus === 'running' || processStatus === 'cancelled' || processStatus === 'error') ? (
+                  <ThinkingProcess steps={thinkingSteps} status={processStatus} />
                 ) : (
-                  <div 
-                    ref={answerRef} 
-                    className="prose prose-zinc max-w-none" 
-                    style={{ color: 'black' }}
-                    dangerouslySetInnerHTML={{ __html: answer }} />
+                  answer && processStatus === 'success' && (
+                    <div className='w-full'>
+                      <details className="mb-6 group" open>
+                        <summary className="font-semibold text-slate-800 cursor-pointer list-none flex items-center justify-between">
+                          <span>Düşünme Süreci Tamamlandı</span>
+                          <svg className="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </summary>
+                        <div className="mt-4 pl-4 border-l-2 border-slate-200 space-y-2">
+                            {thinkingSteps.map((step, index) => (
+                                <div key={index} className="flex items-center text-sm text-slate-600">
+                                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>{step}</span>
+                                </div>
+                            ))}
+                        </div>
+                      </details>
+                      <div
+                          ref={answerRef}
+                          className="prose prose-zinc max-w-none border-t border-slate-200 pt-6"
+                          style={{ color: 'black' }}
+                          dangerouslySetInnerHTML={{ __html: answer }}
+                      />
+                      <div className="mt-8 pt-4 border-t border-slate-200">
+                        <p className="text-sm font-semibold text-slate-700 mb-2 text-center">
+                          {feedbackStatus === 'idle' ? 'Bu cevap yardımcı oldu mu?' : 'Geri bildiriminiz için teşekkürler!'}
+                        </p>
+                        <div className="flex justify-center items-center space-x-4">
+                          <button
+                            onClick={handlePositiveFeedback}
+                            disabled={feedbackStatus !== 'idle'}
+                            className={`flex items-center space-x-2 px-4 py-2 border rounded-full transition-colors disabled:cursor-not-allowed
+                              ${feedbackStatus === 'positive'
+                                ? 'bg-green-600 border-green-600 text-white'
+                                : `bg-white border-slate-300 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-green-50 hover:border-green-400 hover:text-green-700' : 'opacity-50'}`
+                              }`
+                            }
+                            aria-label="Cevap doğru"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333V17a1 1 0 001 1h6.758a1 1 0 00.97-1.22l-1.38-4.143A1 1 0 0012.38 11H9V6.5a1.5 1.5 0 00-3 0v3.833z" />
+                            </svg>
+                            <span>Evet</span>
+                          </button>
+                          <button
+                            onClick={handleNegativeFeedback}
+                            disabled={feedbackStatus !== 'idle'}
+                            className={`flex items-center space-x-2 px-4 py-2 border rounded-full transition-colors disabled:cursor-not-allowed
+                              ${feedbackStatus === 'negative'
+                                ? 'bg-red-600 border-red-600 text-white'
+                                : `bg-white border-slate-300 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-red-50 hover:border-red-400 hover:text-red-700' : 'opacity-50'}`
+                              }`
+                            }
+                            aria-label="Cevap yanlış"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667V3a1 1 0 00-1-1h-6.758a1 1 0 00-.97 1.22l1.38 4.143A1 1 0 007.62 9H11v4.5a1.5 1.5 0 003 0V9.667z" />
+                            </svg>
+                            <span>Hayır</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
             </div>
