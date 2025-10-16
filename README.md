@@ -14,7 +14,7 @@ TKGM'nin görevde yükselme sınavları, Anayasa'dan kanunlara, yönetmeliklerde
 
 ## ✨ Temel Özellikler
 
-* **🧠 Mevzuat Uzmanlığı:** Asistan, 657 Sayılı DMK, 3402 Sayılı Kadastro Kanunu, Medeni Kanun gibi temel kanunların yanı sıra TKGM'nin kendi yönetmelik ve genelgeleri konusunda derin bir bilgiye sahiptir.
+* **🧠 Mevzuat Uzmanlığı:** Asistan, başta 657 Sayılı Devlet Memurları Kanunu ve Anayasa olmak üzere, TKGM'nin görev alanıyla ilgili tüm kanun, yönetmelik ve genelgeler konusunda derin bir bilgiye sahiptir.
 * **⚖️ Normlar Hiyerarşisi Prensibi:** Asistan, bir soruya cevap verirken daima en üstün hukuki normu (Anayasa > Kanun > Cumhurbaşkanlığı Kararnamesi > Yönetmelik > Genelge) esas alır.
 * **🔄 Güncellik Kontrolü:** Tüm bilgileri **T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr)** gibi resmi kaynaklardan teyit ederek en güncel durumu yansıtır.
 * **💡 Analitik Cevaplama:** Sadece bilgiyi aktarmakla kalmaz, farklı mevzuat maddeleri arasındaki bağlantıları kurarak analitik ve gerekçeli cevaplar üretir.

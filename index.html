@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TKGM Sınav Asistanı</title>
+    <title>TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Asistanı</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
       /* Firefox */
@@ -30,6 +30,27 @@
       }
        *::-webkit-scrollbar-thumb:hover {
         background-color: #94a3b8;
+      }
+      
+      /* Style for emphasized keywords in the quote */
+      .prose blockquote strong {
+        color: #dc2626; /* red-600 */
+      }
+
+      /* Style for blockquotes to make citations stand out */
+      .prose blockquote {
+        background-color: #f8fafc; /* slate-50 */
+        border-left-width: 4px;
+        border-left-color: #2563eb; /* blue-600 */
+        padding: 0.75rem 1.25rem;
+        font-style: italic;
+        color: #334155; /* slate-700 */
+      }
+      .prose blockquote p:first-of-type::before {
+        content: none;
+      }
+      .prose blockquote p:last-of-type::after {
+        content: none;
       }
     </style>
   <script type="importmap">

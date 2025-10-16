@@ -1,5 +1,5 @@
 {
-  "name": "TKGM Görevde Yükselme Sınav Asistanı",
+  "name": "TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Asistanı",
   "description": "TKGM Görevde Yükselme ve Unvan Değişikliği Sınavı için, resmi sınav konularını kullanarak soruları cevaplayan yapay zeka destekli bir çalışma yardımcısı.",
   "requestFramePermissions": [
     "camera"

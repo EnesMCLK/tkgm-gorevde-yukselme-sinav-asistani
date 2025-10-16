@@ -6,6 +6,7 @@ type ProcessStatus = 'running' | 'cancelled' | 'error';
 interface ThinkingProcessProps {
   steps: string[];
   status: ProcessStatus;
+  errorMessage?: string | null;
 }
 
 const SpinnerIcon: React.FC = () => (
@@ -28,7 +29,7 @@ const StopIcon: React.FC = () => (
 );
 
 
-const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status }) => {
+const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status, errorMessage }) => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
     useEffect(() => {
@@ -54,6 +55,8 @@ const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status }) => {
 
     if (status === 'cancelled' || status === 'error') {
         const isError = status === 'error';
+        const defaultErrorMessage = 'Lütfen daha sonra tekrar deneyiniz.';
+
         return (
             <div className="text-center p-4 w-full">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
@@ -63,7 +66,7 @@ const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status }) => {
                     {isError ? 'İşlem Başarısız Oldu' : 'İşlem Durduruldu'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                    {isError ? 'Lütfen daha sonra tekrar deneyiniz.' : 'Yeni bir sorgu başlatabilirsiniz.'}
+                    {isError ? (errorMessage || defaultErrorMessage) : 'Yeni bir sorgu başlatabilirsiniz.'}
                 </p>
             </div>
         );

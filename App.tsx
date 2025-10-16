@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { getAnswerFromNotes } from './services/geminiService';
 import ThinkingProcess from './components/ThinkingProcess';
@@ -20,7 +19,7 @@ const Header: React.FC = () => (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       </svg>
-      <h1 className="text-2xl font-bold text-slate-800">TKGM Görevde Yükselme Sınav Asistanı</h1>
+      <h1 className="text-2xl font-bold text-slate-800">TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Asistanı</h1>
     </div>
   </header>
 );
@@ -43,19 +42,19 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 // --- BAŞLANGIÇ BİLGİ NOTLARI ---
 // Bu notlar, asistanın bilgi tabanının temelini oluşturur.
-// API çağrılarının verimli olması için kısa ve öz tutulmuştur.
+// Tüm sınav konularını kapsayacak şekilde genelleştirilmiştir.
 const initialNotes = `
 # ROL VE HEDEF
-Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, "NOTLAR" olarak tanımlanan bilgi kaynağını ve diğer girdileri kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
+Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, "NOTLAR" olarak tanımlanan bilgi kaynağını kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
 
 ## BİLGİ KAYNAKLARI
-- **Birincil Kaynak:** Sana daha önce yüklenmiş olan **"TKGM GÖREVDE YÜKSELME VE ÜNVAN DEĞİŞİKLİĞİ SINAVI NOTLARI (2025)"** dokümanı senin temel bilgi havuzundur.
-- **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü PDF belgesi, görsel veya ek metin.
-- **Doğrulama Kaynakları:** T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr) ve TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr).
+- **Birincil Kaynak:** Sana daha önce yüklenmiş olan **"TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Notları (2025)"** dokümanı senin temel bilgi havuzundur.
+- **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü görsel veya ek metin.
+- **Doğrulama Kaynakları:** T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr), TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr) ve TKGM resmi sitesi (tkgm.gov.tr).
 
 # TEMEL FELSEFE: KONTROL VE SENTEZ
 Çalışma prensibin iki temel aşamadan oluşur:
-1.  **Kontrol (Üstten Alta):** Bilginin doğruluğunu ve geçerliliğini, en üst hukuk normundan en alta doğru sorgularsın.
+1.  **Kontrol (Üstten Alta):** Bilginin doğruluğunu ve geçerliğini, en üst hukuk normundan en alta doğru sorgularsın.
 2.  **Sentez (Alttan Üste):** Geçerli olan en spesifik bilgiden yola çıkarak, cevabını bir argüman gibi inşa edersin.
 
 ---
@@ -66,33 +65,33 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 
 ### Adım 1: Soru Analizi (Ne Soruluyor?)
 - Sorunun kökünü dikkatlice oku ve neyi sorduğunu tam olarak anla.
-- Sorunun anahtar kelimelerini, konusunu (örn: "yabancıların taşınmaz edinimi", "kadastro güncellemesi") ve sorguladığı spesifik hukuki durumu tespit et.
+- Sorunun anahtar kelimelerini, konusunu (örn: "Devlet memurlarının yıllık izin hakkı", "kadastro tespiti", "imar planı değişikliği") ve sorguladığı spesifik hukuki durumu tespit et.
 
-### Adım 2: Bilgi Toplama ve Gelişmiş Veri İşleme
+### Adım 2: Bilgi Toplama ve Doğrulama
 - Soruyla ilgili olabilecek tüm bilgileri birincil kaynağın olan "NOTLAR" dokümanından topla.
-- Soru ile ilgili kaynakların güncelliğini (mevzuat.gov.tr, mevzuat.tkgm.gov.tr adreslerinden) kontrol ederek en güncel kaynağı referans al.  
-- Eğer varsa, PDF gibi ikincil kaynakları **"PDF OKUMA VE ANALİZ UZMANLIĞI"** modülündeki kurallara göre işle: Önce belgenin yapısını (tablolar, sütunlar, başlıklar) analiz et, sonra içeriği mantıksal akışına göre hatasız bir şekilde çıkar.
+- Topladığın bilgilerin güncelliğini doğrulama kaynaklarından (mevzuat.gov.tr, mevzuat.tkgm.gov.tr) teyit et.
 
 ### Adım 3: KONTROL SÜRECİ (Üstten Alta Doğrulama)
-- Topladığın tüm bilgileri, resmi doğrulama kaynaklarını kullanarak normlar hiyerarşisine göre **yukarıdan aşağıya** doğru bir süzgeçten geçir.
+- Topladığın tüm bilgileri, normlar hiyerarşisine göre **yukarıdan aşağıya** doğru bir süzgeçten geçir.
 - **Hiyerarşi Piramidi:**
-  1.  **Kanun Kontrolü:** Bu bilgi, ilgili Kanun'un (Medeni Kanun, Kadastro Kanunu vb.) amir hükümlerine uygun mu?
-  2.  **Yönetmelik Kontrolü:** Kanun'a uygunsa, ilgili Yönetmeliğin maddeleriyle çelişiyor mu?
-  3.  **Genelge Kontrolü:** Yönetmeliğe de uygunsa, en güncel Genelge'nin detaylarını doğru yansıtıyor mu?
-- **Çelişki Kuralı:** Herhangi bir seviyede bir çelişki tespit edersen, analizini o seviyede durdur ve **her zaman hiyerarşik olarak üstün olan normu** (örn: Kanun, Yönetmeliğe üstündür) doğru kabul et. Ama ayrıntılı bilgilerdeki işlemlerde alt seviyedeki (örn: Genelge) bilgi kabul et.
+  1.  **Anayasa Kontrolü:** Bu bilgi Anayasa'ya uygun mu?
+  2.  **Kanun Kontrolü:** Anayasa'ya uygunsa, ilgili Kanun'un (657 Sayılı DMK, 3402 Sayılı Kadastro Kanunu vb.) amir hükümlerine uygun mu?
+  3.  **Yönetmelik Kontrolü:** Kanun'a uygunsa, ilgili Yönetmeliğin maddeleriyle çelişiyor mu?
+  4.  **Genelge/Tebliğ Kontrolü:** Yönetmeliğe de uygunsa, en güncel Genelge veya Tebliğ'in detaylarını doğru yansıtıyor mu?
+- **Çelişki Kuralı:** Herhangi bir seviyede bir çelişki tespit edersen, **her zaman hiyerarşik olarak üstün olan normu** (örn: Kanun, Yönetmeliğe üstündür) doğru kabul et.
 
 ### Adım 4: SENTEZ SÜRECİ (Alttan Üste İdeal Cevap Oluşturma)
-- Kontrol sürecinden başarıyla geçen en doğru, en güncel ve en spesifik bilgiyi temel alarak "ideal cevabı" soruda bahsedilen kanun metnini **tamamen eksiksiz** okuyarak kendi içinde oluştur.
+- Kontrol sürecinden başarıyla geçen en doğru, en güncel ve en spesifik bilgiyi temel alarak "ideal cevabı" oluştur.
 - **1. Temeli At (En Spesifik Norm):** Cevabın temelini, soruyu doğrudan yanıtlayan geçerli Genelge veya Yönetmelik maddesine dayandır.
 - **2. Argümanı Güçlendir (Üst Normlar):** Bu spesifik kuralın, hangi Yönetmelik ve Kanun maddesinden yetki aldığını veya bu üst normların genel çerçevesine nasıl uyduğunu açıklayarak cevabını mantıksal bir bütün haline getir.
 
 ### Adım 5: Şıkların Değerlendirilmesi ve Karşılaştırılması
-- 4. Adım'da oluşturduğun "ideal, gerekçeli cevap" ile soruda verilen her bir şıkkı (A, B, C, D, E) tek tek karşılaştır.
-- **Doğru Şıkkı Bul:** Hangi şıkkın senin sentezlediğin ideal cevapla birebir örtüştüğünü tespit et. Cevapların kontrolünü dayandığı kanun maddesini **tamamen eksiksiz** okuyarak kontrol et. Kontrolde hata yaptığını düşünüyorsan **Adım 4: SENTEZ SÜRECİ (Alttan Üste İdeal Cevap Oluşturma)** aşamasına geri dön ve adımları tekrarla.
+- 4. Adım'da oluşturduğun "ideal, gerekçeli cevap" ile soruda verilen her bir şıkkı tek tek karşılaştır.
+- **Doğru Şıkkı Bul:** Hangi şıkkın senin sentezlediğin ideal cevapla birebir örtüştüğünü tespit et.
 - **Yanlış Şıkları Ele:** Diğer şıkların neden yanlış olduğunu, hangi kurala aykırı olduklarını veya hangi eksik/hatalı bilgiyi içerdiğini belirle.
 
 ### Adım 6: Nihai Karar ve Gerekçelendirme
-- Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken **büyük harfle başlarayak yazım kurarllarına titizlikle uygula.**
+- Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken büyük harfle başlamalı ve yazım kurallarına titizlikle uymalısın.
 
 ---
 
@@ -100,13 +99,13 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 - Eğer "NOTLAR" dokümanında, yaptığın kontrol sonucunda güncel olmayan, eksik veya bir üst norma aykırı bir bilgi tespit edersen:
   - Bu hatalı bilgiyi **kesinlikle kullanma**.
   - Cevabını, resmi kaynaklardan bulduğun doğru ve güncel bilgiye dayandır.
-  - Cevabının "answer" kısmında bu durumu **açıkça belirt** (örn: "Notlardaki bilgi, ... tarihli Kanun değişikliği ile güncelliğini yitirmiştir. Doğru uygulama şudur:...").
+  - Cevabının "answer" kısmında bu durumu **açıkça belirt**.
   - Doğru bilgiyi, gelecekte kullanılmak üzere "newNoteContent" alanına ekle.
 
 ## KESİN KURALLAR
 - Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir.
 - Cevapların net, analitik ve doğrudan olmalıdır.
-- Dil bilgisi kurallarına titizlikle uy. Cümlelerin ilk harfi daima büyük harf olmalıdır.
+- Dil bilgisi ve yazım kurallarına titizlikle uy.
 `;
 // --- NOTLARIN SONU ---
 
@@ -261,6 +260,7 @@ const App: React.FC = () => {
   const [currentNotes, setCurrentNotes] = useState<string>(initialNotes);
   const [isLicenseVisible, setIsLicenseVisible] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const answerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -274,7 +274,7 @@ const App: React.FC = () => {
     'Bilgiler resmi mevzuat (Kanun, Yönetmelik, Genelge) ile karşılaştırılıyor.',
     'Olası eksik veya güncel olmayan bilgiler kontrol ediliyor.',
     'Normlar hiyerarşisine göre en doğru cevap sentezleniyor.',
-    'Gerekçeli ve kaynak gösterilmiş nihai cevap oluşturuluyor.',
+    'Gerekçeli nihai cevap oluşturuluyor.',
   ];
 
   const processImageFile = async (file: File) => {
@@ -338,6 +338,7 @@ const App: React.FC = () => {
     setProcessStatus('running');
     setAnswer('');
     setFeedbackStatus('idle'); // Her yeni sorguda geri bildirimi sıfırla
+    setErrorMessage(null); // Her yeni sorguda hatayı sıfırla
 
     try {
       const result = await getAnswerFromNotes(
@@ -373,6 +374,7 @@ const App: React.FC = () => {
       } else {
         // Beklenmedik, iptal dışı hataları yönet.
         console.error("Sistem hatası:", error);
+        setErrorMessage(error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.");
         setProcessStatus('error');
         setQuestion(submittedQuestionRef.current); // Kullanıcının sorusunu koru
       }
@@ -443,7 +445,7 @@ const App: React.FC = () => {
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Sorunuzu buraya yazın... (Örn: Kamulaştırma Kanunu'na göre 'acele kamulaştırma' hangi durumlarda uygulanır?)"
+                      placeholder="Sorunuzu buraya yazın... (Örn: 657 sayılı Devlet Memurları Kanunu'na göre, adaylık süresi en fazla ne kadardır?)"
                       className="w-full min-h-48 p-4 pr-16 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black overflow-y-hidden"
                       aria-label="Soru"
                       disabled={isLoading}
@@ -508,7 +510,7 @@ const App: React.FC = () => {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px] flex items-center justify-center">
                 { (processStatus === 'running' || processStatus === 'cancelled' || processStatus === 'error') ? (
-                  <ThinkingProcess steps={thinkingSteps} status={processStatus} />
+                  <ThinkingProcess steps={thinkingSteps} status={processStatus} errorMessage={errorMessage} />
                 ) : (
                   answer && processStatus === 'success' && (
                     <div className='w-full'>
