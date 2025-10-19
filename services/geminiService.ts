@@ -97,10 +97,12 @@ ${critiqueFeedback}
 2.  **Web Araştırması:** Google Arama'yı kullanarak soruyu cevaplamak için gereken en güncel ve doğru hukuki normları bul. Bilgiyi normlar hiyerarşisine (Anayasa > Kanun > Yönetmelik vb.) göre doğrula.
 3.  **Sonuç Derlemesi:**
     * \`researchSummary\`: Araştırmandan elde ettiğin, sorunun çözümünde kullanılacak tüm geçerli ve ilgili hukuki metinleri bir "Araştırma Özeti" olarak oluştur. Bu özet, sonraki adımlar için TEK BİLGİ KAYNAĞI olacaktır.
-## JSON ÇIKTI FORMATI
+## ÇOK ÖNEMLİ KURAL: Çıktın, başka hiçbir metin olmadan, doğrudan geçerli bir JSON nesnesi olmalıdır.
+\`\`\`json
 {
   "researchSummary": "Soruyu cevaplamak için kullanılacak, filtrelenmiş ve doğrulanmış tüm hukuki metinlerin derlemesi. Bu metin, web'den bulunan gerçek kanun maddeleri, yönetmelikler vb. içermelidir."
 }
+\`\`\`
 ---
 # SİSTEM NOTLARI (Çalışma Prensiplerin)
 ${notes}
@@ -108,7 +110,6 @@ ${notes}
 # SORU
 ${question}${imageInstruction}
 `;
-        const researchSchema = { type: Type.OBJECT, properties: { researchSummary: { type: Type.STRING } } };
         let researchRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: researchPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : researchPrompt;
 
         const researchResponse = await callGemini({
@@ -116,8 +117,8 @@ ${question}${imageInstruction}
             contents: researchRequestContents,
             config: {
                 tools: [{ googleSearch: {} }],
-                responseMimeType: "application/json",
-                responseSchema: researchSchema
+                // responseMimeType ve responseSchema, 'tools' ile birlikte kullanılamadığı için kaldırıldı.
+                // Prompt, modelin text response içinde bir JSON dizesi döndürmesini sağlamak için tasarlandı.
             },
         }, signal);
 
