@@ -47,9 +47,20 @@ const callGemini = async (params: GenerateContentParameters, signal?: AbortSigna
     return generateContentPromise;
 }
 
-const parseJsonFromResponse = (text: string) => {
+const parseJsonFromResponse = (text?: string) => {
+    if (!text) {
+        throw new Error("Asistandan bir yanıt alınamadı. Yanıt, güvenlik filtreleri tarafından engellenmiş veya geçersiz olabilir.");
+    }
     const rawText = text.trim().replace(/^```json\s*|```\s*$/g, '');
-    return JSON.parse(rawText);
+    if (!rawText) {
+        throw new Error("Asistan boş bir yanıt döndürdü. Lütfen sorunuzu değiştirerek tekrar deneyin.");
+    }
+    try {
+        return JSON.parse(rawText);
+    } catch (e) {
+        console.error("JSON ayrıştırma hatası:", rawText);
+        throw new Error("Asistan, beklenmeyen bir formatta yanıt verdi. Lütfen tekrar deneyin.");
+    }
 };
 
 export const getAnswerFromNotes = async (
