@@ -42,15 +42,16 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const initialNotes = `
 # ROL VE HEDEF
-Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, "NOTLAR" olarak tanımlanan bilgi kaynağını kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
-- **Birincil Kaynak:** Sana daha önce yüklenmiş olan **"TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Notları (2025)"** dokümanı senin temel bilgi havuzundur.
-- **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü görsel veya ek metin.
-- **Doğrulama Kaynakları:** T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr), TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr) ve TKGM resmi sitesi (tkgm.gov.tr).
+Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, GÜVENİLİR WEB KAYNAKLARINI (mevzuat.gov.tr, tkgm.gov.tr vb.) kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
 
-# TEMEL FELSEFE: KONTROL VE SENTEZ
-Çalışma prensibin iki temel aşamadan oluşur:
-1.  **Kontrol (Üstten Alta):** Bilginin doğruluğunu ve geçerliğini, en üst hukuk normundan en alta doğru sorgularsın.
-2.  **Sentez (Alttan Üste):** Geçerli olan en spesifik bilgiden yola çıkarak, cevabını bir argüman gibi inşa edersin.
+- **Birincil Bilgi Kaynağı:** Senin temel bilgi havuzun statik bir doküman DEĞİLDİR. Bilgiyi, Google Arama aracını kullanarak her zaman en güncel ve resmi T.C. mevzuat sitelerinden (\`mevzuat.gov.tr\`, \`mevzuat.tkgm.gov.tr\`, \`*.gov.tr\` uzantılı diğer resmi kaynaklar) anlık olarak bulacaksın. Bu metin, senin bilgi kaynağın değil, DÜŞÜNME VE CEVAP VERME SÜRECİNİ belirleyen bir rehberdir.
+- **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü görsel veya ek metin.
+
+# TEMEL FELSEFE: ARAŞTIR, KONTROL ET VE SENTEZLE
+Çalışma prensibin üç temel aşamadan oluşur:
+1.  **Araştır:** Soruyu cevaplamak için gereken güncel bilgiyi güvenilir web kaynaklarından topla.
+2.  **Kontrol Et (Üstten Alta):** Bulduğun bilginin doğruluğunu ve geçerliğini, en üst hukuk normundan en alta doğru sorgula.
+3.  **Sentezle (Alttan Üste):** Geçerli olan en spesifik bilgiden yola çıkarak, cevabını bir argüman gibi inşa et.
 
 ---
 
@@ -62,9 +63,8 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 - Sorunun kökünü dikkatlice oku ve neyi sorduğunu tam olarak anla.
 - Sorunun anahtar kelimelerini, konusunu (örn: "Devlet memurlarının yıllık izin hakkı", "kadastro tespiti", "imar planı değişikliği") ve sorguladığı spesifik hukuki durumu tespit et.
 
-### Adım 2: Bilgi Toplama ve Doğrulama
-- Soruyla ilgili olabilecek tüm bilgileri birincil kaynağın olan "NOTLAR" dokümanından topla.
-- Topladığın bilgilerin güncelliğini doğrulama kaynaklarından (mevzuat.gov.tr, mevzuat.tkgm.gov.tr) teyit et.
+### Adım 2: WEB ARAŞTIRMASI ve Bilgi Doğrulama
+- Soruyla ilgili olabilecek tüm bilgileri, Google Arama aracını kullanarak güvenilir ve resmi kaynaklardan (mevzuat.gov.tr, mevzuat.tkgm.gov.tr, tkgm.gov.tr, *.gov.tr) topla.
 
 ### Adım 3: KONTROL SÜRECİ (Üstten Alta Doğrulama)
 - Topladığın tüm bilgileri, normlar hiyerarşisine göre **yukarıdan aşağıya** doğru bir süzgeçten geçir.
@@ -87,18 +87,10 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 
 ### Adım 6: Nihai Karar ve Gerekçelendirme
 - Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken büyük harfle başlamalı ve yazım kurallarına titizlikle uymalısın.
-
----
-
-## ÖZEL DURUM PROSEDÜRÜ: EKSİK/HATALI BİLGİ
-- Eğer "NOTLAR" dokümanında, yaptığın kontrol sonucunda güncel olmayan, eksik veya bir üst norma ayırı bir bilgi tespit edersen:
-  - Bu hatalı bilgiyi **kesinlikle kullanma**.
-  - Cevabını, resmi kaynaklardan bulduğun doğru ve güncel bilgiye dayandır.
-  - Cevabının "answer" kısmında bu durumu **açıkça belirt**.
-  - Doğru bilgiyi, gelecekte kullanılmak üzere "newNoteContent" alanına ekle.
+- Cevabının sonunda, kullandığın web kaynaklarını listele.
 
 ## KESİN KURALLAR
-- Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir.
+- Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir. Bilgi kaynağın her zaman GÜVENİLİR WEB KAYNAKLARI olmalıdır.
 - Cevapların net, analitik ve doğrudan olmalıdır.
 - Dil bilgisi ve yazım kurallarına titizlikle uy.
 `;
@@ -264,6 +256,73 @@ const CameraModal: React.FC<{ onClose: () => void; onCapture: (file: File) => vo
   );
 };
 
+const FeedbackModal: React.FC<{ onClose: () => void; onSubmit: (reason: string) => void }> = ({ onClose, onSubmit }) => {
+  const [reason, setReason] = useState('');
+
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  const handleSubmit = () => {
+    if (reason.trim()) {
+      onSubmit(reason);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="feedback-title"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-lg w-full flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="p-4 border-b flex justify-between items-center">
+          <h2 id="feedback-title" className="text-lg font-bold text-slate-800">Geri Bildirim & Düzeltme Talebi</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </header>
+        <main className="p-6">
+          <p className="text-sm text-slate-600 mb-4">Lütfen cevabın neden yanlış veya eksik olduğunu kısaca açıklayın. Geri bildiriminiz, asistanın kendini düzeltmesine yardımcı olacaktır.</p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Örn: Bu yönetmelik maddesi 2023 yılında değiştirildi."
+            className="w-full min-h-24 p-3 border border-slate-300 rounded-md resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black"
+            aria-label="Düzeltme nedeni"
+            autoFocus
+          />
+        </main>
+        <footer className="p-4 border-t flex justify-end items-center space-x-3 bg-slate-50 rounded-b-lg">
+          <button 
+            onClick={onClose} 
+            className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400"
+          >
+            İptal
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            disabled={!reason.trim()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400 disabled:cursor-not-allowed"
+          >
+            Düzeltme Gönder
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+
 const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
   const [image, setImage] = useState<{ file: File; base64: string; mimeType: string; } | null>(null);
@@ -273,6 +332,7 @@ const App: React.FC = () => {
   const [currentNotes, setCurrentNotes] = useState<string>(initialNotes);
   const [isLicenseVisible, setIsLicenseVisible] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [thinkingSteps, setThinkingSteps] = useState<ProgressUpdate[]>([]);
 
@@ -330,7 +390,6 @@ const App: React.FC = () => {
     if (!questionToSubmit) return;
 
     submissionControllerRef.current = new AbortController();
-    const signal = submissionControllerRef.current.signal;
     submittedQuestionRef.current = questionToSubmit;
     
     setProcessStatus('running');
@@ -348,8 +407,10 @@ const App: React.FC = () => {
         currentNotes, 
         questionToSubmit, 
         handleProgressUpdate,
-        image ? { data: image.base64, mimeType: image.mimeType } : undefined,
-        signal
+        {
+          image: image ? { data: image.base64, mimeType: image.mimeType } : undefined,
+          signal: submissionControllerRef.current.signal
+        }
       );
       
       rawAnswerRef.current = result.answer; 
@@ -389,13 +450,61 @@ const App: React.FC = () => {
 
   const handleNegativeFeedback = useCallback(() => {
     if (feedbackStatus !== 'idle') return;
-    setFeedbackStatus('negative');
-    window.va?.('event', 'Feedback', { 
-        status: 'negative',
-        question: submittedQuestionRef.current,
-        answer_snippet: rawAnswerRef.current.substring(0, 100)
-    });
+    setIsFeedbackModalOpen(true);
   }, [feedbackStatus]);
+  
+  const handleCorrectionSubmit = useCallback(async (reason: string) => {
+    setIsFeedbackModalOpen(false);
+    setFeedbackStatus('negative');
+
+    window.va?.('event', 'Feedback', { 
+        status: 'negative_with_reason',
+        question: submittedQuestionRef.current,
+        answer_snippet: rawAnswerRef.current.substring(0, 100),
+        reason: reason
+    });
+
+    submissionControllerRef.current = new AbortController();
+    setProcessStatus('running');
+    setAnswer('');
+    setErrorMessage(null);
+    setThinkingSteps([]);
+
+    const handleProgressUpdate = (update: ProgressUpdate) => {
+        setThinkingSteps(prevSteps => [...prevSteps, update]);
+    };
+
+    try {
+      const result = await getAnswerFromNotes(
+        currentNotes, 
+        submittedQuestionRef.current,
+        handleProgressUpdate,
+        {
+          image: image ? { data: image.base64, mimeType: image.mimeType } : undefined,
+          signal: submissionControllerRef.current.signal,
+          userCritique: reason
+        }
+      );
+      
+      rawAnswerRef.current = result.answer;
+      const formattedAnswer = await marked.parse(result.answer);
+      
+      setAnswer(formattedAnswer);
+      setProcessStatus('success');
+      setFeedbackStatus('idle');
+
+    } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+            console.log("Düzeltme isteği iptal edildi.");
+        } else {
+            console.error("Düzeltme sırasında sistem hatası:", error);
+            setErrorMessage(error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.");
+            setProcessStatus('error');
+            setQuestion(submittedQuestionRef.current);
+        }
+    }
+  }, [currentNotes, image, feedbackStatus]);
+
 
   useEffect(() => {
     if (processStatus === 'success' && answer && answerRef.current) {
@@ -424,6 +533,7 @@ const App: React.FC = () => {
     <>
       {isLicenseVisible && <LicenseModal onClose={() => setIsLicenseVisible(false)} content={licenseText} />}
       {isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />}
+      {isFeedbackModalOpen && <FeedbackModal onClose={() => setIsFeedbackModalOpen(false)} onSubmit={handleCorrectionSubmit} />}
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow w-full">

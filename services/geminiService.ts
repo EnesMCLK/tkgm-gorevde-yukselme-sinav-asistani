@@ -7,7 +7,7 @@ if (!process.env.API_KEY) {
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // --- TYPES (Frontend ile iletişim için) ---
-export type ProcessStage = 'ARAŞTIRMA' | 'SENTEZ' | 'MANTIKSAL_DENETİM' | 'KAYNAK_BÜTÜNLÜĞÜ' | 'TAMAMLANDI';
+export type ProcessStage = 'ARAŞTIRMA' | 'SENTEZ' | 'MANTIKSAL_DENETİM' | 'TAMAMLANDI';
 export type ProgressStatus = 'running' | 'retrying' | 'success' | 'error';
 
 export interface ProgressUpdate {
@@ -27,7 +27,13 @@ export interface GeminiResponse {
   newNoteContent: string | null;
 }
 
-const MAX_RETRIES = 3;
+interface GetAnswerOptions {
+  image?: ImageInput;
+  signal?: AbortSignal;
+  userCritique?: string;
+}
+
+const MAX_RETRIES = 4;
 
 const callGemini = async (params: GenerateContentParameters, signal?: AbortSignal): Promise<GenerateContentResponse> => {
     const generateContentPromise = ai.models.generateContent(params);
@@ -47,85 +53,112 @@ const parseJsonFromResponse = (text: string) => {
 };
 
 export const getAnswerFromNotes = async (
-  notes: string,
+  notes: string, // This is now the "system instruction" or "persona guide"
   question: string,
   onProgressUpdate: (update: ProgressUpdate) => void,
-  image?: ImageInput,
-  signal?: AbortSignal
+  options: GetAnswerOptions = {}
 ): Promise<GeminiResponse> => {
-  let lastCritique: string | null = null; 
+  const { image, signal, userCritique } = options;
+  let lastCritique: string | null = userCritique || null; 
+  let researchSummary: string | null = null;
+  let proposedAnswer: string | null = null;
+  let sources: Array<{ uri: string; title?: string }> = [];
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     if (signal?.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
 
     try {
       // =================================================================================
-      // AŞAMA 1: ARAŞTIRMA
+      // AŞAMA 1: ARAŞTIRMA (WEB ÖNCELİKLİ)
       // =================================================================================
-      onProgressUpdate({
-        stage: 'ARAŞTIRMA',
-        status: lastCritique ? 'retrying' : 'running',
-        message: lastCritique 
-          ? `Hata tespit edildi, kaynaklar yeniden analiz ediliyor... (Deneme ${attempt + 1})`
-          : 'Soru analiz ediliyor ve ilgili kaynaklar taranıyor...',
-        attempt: attempt + 1
-      });
+      if (!researchSummary) {
+        onProgressUpdate({
+          stage: 'ARAŞTIRMA',
+          status: lastCritique ? 'retrying' : 'running',
+          message: lastCritique 
+            ? userCritique && attempt === 0
+                ? `Kullanıcı geri bildirimi alındı, cevap düzeltiliyor...`
+                : `Hata tespit edildi, kaynaklar yeniden araştırılıyor... (Deneme ${attempt + 1})`
+            : 'Soru analiz ediliyor ve güvenilir web kaynakları taranıyor...',
+          attempt: attempt + 1
+        });
 
-      const critiqueFeedback = lastCritique ? `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt}), üretilen cevap "ORİJİNAL NOTLARIN TAMAMI" ile denetlendiğinde bir çelişki bulundu.\nTESPİT EDİLEN HATA: ${lastCritique}\nLütfen Araştırma Özeti'ni (researchSummary) oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK notları tekrar ve daha dikkatli analiz et. Özellikle bu hataya sebep olan istisna veya detayları bu sefer özete dahil ettiğinden emin ol.` : "";
-      const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
-      
-      const researchPrompt = `
-# GÖREV: UZMAN HUKUKİ ARAŞTIRMACI VE DOĞRULAYICI
+        const critiqueFeedback = lastCritique ? `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt}) bir tutarsızlık bulundu.\nTESPİT EDİLEN HATA: ${lastCritique}\nLütfen Araştırma Özeti'ni (researchSummary) oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK web'de tekrar ve daha dikkatli bir araştırma yap. Özellikle bu hataya sebep olan istisna veya detayları bu sefer özete dahil ettiğinden emin ol.` : "";
+        const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
+
+        const researchPrompt = `
+# GÖREV: UZMAN HUKUK ARAŞTIRMACISI (WEB ARAMA)
 (Deneme ${attempt + 1}/${MAX_RETRIES})
-Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanının birinci aşamasısın. Görevin, sana verilen bir soruyu ve "NOTLAR" olarak tanımlanan geniş bilgi kaynağını kullanarak, soruyu cevaplamak için gereken **tüm ilgili ve geçerli** hukuki normları bulup çıkarmak ve olası hataları tespit ederek sonucu JSON formatında sunmaktır.
+Sen, analitik ve titiz bir yapay zeka asistanının birinci aşamasısın. Görevin, sana verilen soruyu Google Arama'yı kullanarak, güvenilir Türk mevzuat kaynaklarından (özellikle mevzuat.gov.tr, tkgm.gov.tr gibi .gov.tr uzantılı resmi siteler) araştırmaktır.
+"SİSTEM NOTLARI" sadece senin çalışma prensiplerini belirler, bilgi kaynağı DEĞİLDİR. Bilgiyi SADECE web'den bulacaksın.
 ${critiqueFeedback}
-## TEMEL FELSEFE: KONTROL (Üstten Alta)
-Çalışma prensibin, bilginin doğruluğunu ve geçerliğini en üst hukuk normundan en alta doğru sorgulamaktır.
 ## SÜREÇ
-1.  **Soru Analizi:** Sana verilen soruyu ve varsa görseli dikkatlice analiz et. Sorunun anahtar kelimelerini, konusunu (örn: "Devlet memurlarının yıllık izin hakkı", "kadastro tespiti") ve sorguladığı spesifik hukuki durumu tespit et.
-2.  **Bilgi Toplama:** Sağlanan "NOTLAR" metninin tamamını tara ve soruyla ilgili olabilecek tüm metin parçalarını, kanun maddelerini, yönetmelik ve genelge hükümlerini belirle.
-3.  **KONTROL SÜRECİ (Üstten Alta Doğrulama - EN ÖNEMLİ ADIM):**
-    * Topladığın tüm bilgileri, normlar hiyerarşisine göre **yukarıdan aşağıya** doğru bir süzgeçten geçir.
-    * **Hiyerarşi Piramidi:** 1. Anayasa, 2. Kanun, 3. Yönetmelik, 4. Genelge/Tebliğ.
-    * **Çelişki Kuralı:** Bir çelişki tespit edersen, **her zaman hiyerarşik olarak üstün olan normu** doğru kabul et.
-    * **Hata Tespiti:** "NOTLAR" içindeki bir bilginin güncel mevzuata aykırı olduğunu tespit edersen, bu hatalı bilgiyi **kesinlikle kullanma**.
-4.  **Sonuç Derlemesi:**
-    * \`researchSummary\`: Kontrol sürecinden geçen, sorunun çözümünde kullanılacak tüm geçerli ve ilgili hukuki metinleri bir "Araştırma Özeti" olarak oluştur.
-    * \`newNoteContent\`: Eğer "NOTLAR" içinde bir hata tespit ettiysen, doğru ve güncel bilgiyi buraya yaz. Hata yoksa boş bırak.
+1.  **Soru Analizi:** Sana verilen soruyu ve varsa görseli dikkatlice analiz et.
+2.  **Web Araştırması:** Google Arama'yı kullanarak soruyu cevaplamak için gereken en güncel ve doğru hukuki normları bul. Bilgiyi normlar hiyerarşisine (Anayasa > Kanun > Yönetmelik vb.) göre doğrula.
+3.  **Sonuç Derlemesi:**
+    * \`researchSummary\`: Araştırmandan elde ettiğin, sorunun çözümünde kullanılacak tüm geçerli ve ilgili hukuki metinleri bir "Araştırma Özeti" olarak oluştur. Bu özet, sonraki adımlar için TEK BİLGİ KAYNAĞI olacaktır.
 ## JSON ÇIKTI FORMATI
 {
-  "researchSummary": "Soruyu cevaplamak için kullanılacak, filtrelenmiş ve doğrulanmış tüm hukuki metinlerin derlemesi.",
-  "newNoteContent": "Eğer notlarda bir hata tespit edildiyse, buraya notların formatına uygun, doğru ve güncel bilgi eklenecek. Hata yoksa bu alan boş bırakılacak."
+  "researchSummary": "Soruyu cevaplamak için kullanılacak, filtrelenmiş ve doğrulanmış tüm hukuki metinlerin derlemesi. Bu metin, web'den bulunan gerçek kanun maddeleri, yönetmelikler vb. içermelidir."
 }
 ---
-# NOTLAR
+# SİSTEM NOTLARI (Çalışma Prensiplerin)
 ${notes}
 ---
 # SORU
 ${question}${imageInstruction}
 `;
+        const researchSchema = { type: Type.OBJECT, properties: { researchSummary: { type: Type.STRING } } };
+        let researchRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: researchPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : researchPrompt;
 
-      const researchSchema = { type: Type.OBJECT, properties: { researchSummary: { type: Type.STRING }, newNoteContent: { type: Type.STRING } } };
-      let researchRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: researchPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : researchPrompt;
+        const researchResponse = await callGemini({
+            model: 'gemini-2.5-pro',
+            contents: researchRequestContents,
+            config: {
+                tools: [{ googleSearch: {} }],
+                responseMimeType: "application/json",
+                responseSchema: researchSchema
+            },
+        }, signal);
 
-      const researchResponse = await callGemini({ model: 'gemini-2.5-pro', contents: researchRequestContents, config: { responseMimeType: "application/json", responseSchema: researchSchema } }, signal);
-      const researchResult = parseJsonFromResponse(researchResponse.text);
-      const { researchSummary, newNoteContent } = researchResult;
+        const researchResult = parseJsonFromResponse(researchResponse.text);
+        researchSummary = researchResult.researchSummary;
+        
+        const groundingChunks = researchResponse.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        if (groundingChunks && groundingChunks.length > 0) {
+            sources = groundingChunks
+                .map(chunk => chunk.web)
+                .filter((web): web is { uri: string; title?: string } => !!(web && web.uri));
+        }
 
-      if (!researchSummary?.trim()) {
-        throw new Error("Üzgünüm, sağlanan notlarda bu soruyu cevaplayacak ilgili bir bilgi bulunamadı.");
+        if (!researchSummary?.trim()) {
+            throw new Error(`Web araştırması sonucunda bu soruyu cevaplayacak ilgili bir bilgi bulunamadı.`);
+        }
+        lastCritique = null;
       }
 
       // =================================================================================
       // AŞAMA 2: SENTEZ
       // =================================================================================
-      onProgressUpdate({ stage: 'SENTEZ', status: 'running', message: 'Doğrulanan bilgilerle bir cevap taslağı oluşturuluyor...', attempt: attempt + 1 });
-      
-      const synthesisPrompt = `
+      if (!proposedAnswer) {
+        onProgressUpdate({ 
+            stage: 'SENTEZ', 
+            status: lastCritique ? 'retrying' : 'running', 
+            message: lastCritique
+              ? `Mantıksal hata tespit edildi, cevap yeniden oluşturuluyor... (Deneme ${attempt + 1})`
+              : 'Doğrulanan bilgilerle bir cevap taslağı oluşturuluyor...', 
+            attempt: attempt + 1 
+        });
+        
+        const synthesisCritiqueFeedback = lastCritique ? `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt}), oluşturulan cevap mantıksal denetimden geçemedi.\nTESPİT EDİLEN HATA: ${lastCritique}\nLütfen cevabı oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK "ARAŞTIRMA ÖZETİ"ni tekrar yorumla.` : "";
+        const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
+        
+        const synthesisPrompt = `
 # ROL VE HEDEF
 Sen, bir yapay zeka asistanının ikinci aşamasısın. Görevin, sana sunulan sınav sorusunu ve "ARAŞTIRMA ÖZETİ"ni kullanarak doğru şıkkı gerekçeleriyle tespit etmektir.
+${synthesisCritiqueFeedback}
 # KESİN KURAL
-Cevabını oluştururken **yalnızca** 'ARAŞTIRMA ÖZETİ' metnini kullanacaksın.
+Cevabını oluştururken **yalnızca** 'ARAŞTIRMA ÖZETİ' metnini kullanacaksın. Bu özet, web'den bulunan tek doğru kaynaktır.
 ## SÜREÇ
 1.  **İdeal Cevap Oluşturma:** Özete dayanarak zihninde gerekçeli bir cevap oluştur.
 2.  **Şıkları Değerlendir:** İdeal cevabınla sorudaki şıkları karşılaştır. Doğru şıkkı bul ve diğerlerinin neden yanlış olduğunu belirle.
@@ -144,34 +177,36 @@ ${researchSummary}
 # SORU
 ${question}${imageInstruction}
 `;
-      const synthesisSchema = { type: Type.OBJECT, properties: { answer: { type: Type.STRING } } };
-      let synthesisRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: synthesisPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : synthesisPrompt;
+        const synthesisSchema = { type: Type.OBJECT, properties: { answer: { type: Type.STRING } } };
+        let synthesisRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: synthesisPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : synthesisPrompt;
 
-      const synthesisResponse = await callGemini({ model: 'gemini-2.5-pro', contents: synthesisRequestContents, config: { responseMimeType: "application/json", responseSchema: synthesisSchema } }, signal);
-      const synthesisResult = parseJsonFromResponse(synthesisResponse.text);
-      const proposedAnswer = synthesisResult.answer;
-
+        const synthesisResponse = await callGemini({ model: 'gemini-2.5-pro', contents: synthesisRequestContents, config: { responseMimeType: "application/json", responseSchema: synthesisSchema } }, signal);
+        const synthesisResult = parseJsonFromResponse(synthesisResponse.text);
+        proposedAnswer = synthesisResult.answer;
+        lastCritique = null;
+      }
+      
       // =================================================================================
       // AŞAMA 3: MANTIKSAL DENETİM
       // =================================================================================
-      onProgressUpdate({ stage: 'MANTIKSAL_DENETİM', status: 'running', message: 'Cevabın soruyla mantıksal tutarlılığı denetleniyor...', attempt: attempt + 1 });
+      onProgressUpdate({ stage: 'MANTIKSAL_DENETİM', status: 'running', message: 'Cevabın kaynaklarla mantıksal tutarlılığı denetleniyor...', attempt: attempt + 1 });
       
       const logicalCritiquePrompt = `
 # ROL: HUKUK UZMANI DENETÇİ (MANTIKSAL TUTARLILIK)
-Sen şüpheci bir denetçisin. Görevin, bir yapay zeka cevabını, sorunun kendisi ve kullandığı *KAYNAK ÖZETİ* ile karşılaştırarak mantıksal denetimden geçirmektir.
+Sen şüpheci bir denetçisin. Görevin, bir yapay zeka cevabını, sorunun kendisi ve kullandığı *KAYNAK ÖZETİ* ile karşılaştırarak mantıksal denetimden geçirmektir. KAYNAK ÖZETİ tek doğru kaynaktır.
 ## KONTROL SÜRECİ
 1.  **Soru-Cevap Uyumu:** Cevap, sorunun sorduğu şeyi **doğrudan** yanıtlıyor mu? (örn: "değildir" diye sorarken "hangisidir" diye mi cevaplıyor?)
-2.  **Kaynak-Cevap Tutarlılığı:** Cevaptaki her iddia, **sadece** "KAYNAK ÖZETİ" ile destekleniyor mu? Varsayım var mı?
+2.  **Kaynak-Cevap Tutarlılığı:** Cevaptaki her iddia, **sadece** "KAYNAK ÖZETİ" ile destekleniyor mu? Varsayım var mı? Cevapta, özette olmayan bir bilgi var mı?
 ## KARAR
 * **BAŞARILIYSA:** \`"isValid": true\`
 * **BAŞARISIZSA:** \`"isValid": false\` ve \`critique\` alanında hatayı açıkla.
 ## JSON ÇIKTI FORMATI
 { "isValid": boolean, "critique": "Hatanın açıklaması." }
 ---
-# ORİJİNAL SORU
+# ORİJINAL SORU
 ${question}
 ---
-# KAYNAK ÖZETİ
+# KAYNAK ÖZETİ (WEB'DEN BULUNAN TEK DOĞRU KAYNAK)
 ${researchSummary}
 ---
 # ÜRETİLEN CEVAP
@@ -184,50 +219,32 @@ ${proposedAnswer}
 
       if (!logicalCritiqueResult.isValid) {
         lastCritique = logicalCritiqueResult.critique || "Cevap, soruyla veya kullanılan kaynak özetiyle mantıksal olarak tutarsız.";
-        console.warn(`AŞAMA 3 DENETİMİ BAŞARISIZ (Deneme ${attempt + 1}/${MAX_RETRIES}): ${lastCritique}. Yeniden deneniyor...`);
+        console.warn(`AŞAMA 3 DENETİMİ BAŞARISIZ (Deneme ${attempt + 1}/${MAX_RETRIES}): ${lastCritique}. Kaynak özeti tutarsızlığı nedeniyle yeniden araştırma yapılacak...`);
+        researchSummary = null; // Araştırma özetini geçersiz kıl
+        proposedAnswer = null; // Cevap taslağını geçersiz kıl
         continue;
       }
 
       // =================================================================================
-      // AŞAMA 4: KAYNAK BÜTÜNLÜĞÜ DENETİMİ
+      // BAŞARILI SONUÇ
       // =================================================================================
-       onProgressUpdate({ stage: 'KAYNAK_BÜTÜNLÜĞÜ', status: 'running', message: 'Cevabın notların bütünüyle çelişip çelişmediği kontrol ediliyor...', attempt: attempt + 1 });
-       
-       const sourceCritiquePrompt = `
-# ROL: KIDEMLİ BAŞDENETÇİ (KAYNAK BÜTÜNLÜĞÜ)
-Önceki denetçi, cevabın "KAYNAK ÖZETİ"ne uyduğunu doğruladı. Senin görevin ise cevabın, **"ORİJİNAL NOTLARIN TAMAMI"** ile çelişip çelişmediğini veya bu notlardaki kritik bir istisnayı/detayı atlayıp atlamadığını bulmak.
-Amaç: Aşama 1'deki Araştırmacının, özeti hazırlarken kritik bir bilgiyi dışarıda bırakıp bırakmadığını tespit etmek.
-## KONTROL SÜRECİ
-1.  **Çelişki Kontrolü:** Cevaptaki iddialar, notların tamamındaki başka bir madde ile çelişiyor mu?
-2.  **Eksik Bilgi Kontrolü:** Notların tamamında, soruyu etkileyen ama cevapta bahsedilmeyen kritik bir **istisna, koşul, süre** veya **detay** var mı?
-## KARAR
-* **HATA YOKSA:** \`"isSound": true\`
-* **HATA VARSA:** \`"isSound": false\` ve \`critique\` alanında hatayı açıkla.
-## JSON ÇIKTI FORMATI
-{ "isSound": boolean, "critique": "Hatanın açıklaması." }
----
-# ORİJİNAL SORU
-${question}
----
-# ORİJİNAL NOTLARIN TAMAMI
-${notes}
----
-# ÖNERİLEN NİHAİ CEVAP
-${proposedAnswer}
-`;
-      const sourceCritiqueSchema = { type: Type.OBJECT, properties: { isSound: { type: Type.BOOLEAN }, critique: { type: Type.STRING } } };
+      onProgressUpdate({ stage: 'TAMAMLANDI', status: 'success', message: 'Tüm kontrollerden başarıyla geçti.' });
+      
+      let citations = '';
+      if (sources && sources.length > 0) {
+          const sourceLinks = sources
+              .map(web => `[${web.title || web.uri}](${web.uri})`);
+          
+          const uniqueSources = [...new Set(sourceLinks)];
 
-      const sourceCritiqueResponse = await callGemini({ model: 'gemini-2.5-pro', contents: sourceCritiquePrompt, config: { responseMimeType: "application/json", responseSchema: sourceCritiqueSchema } }, signal);
-      const sourceCritiqueResult = parseJsonFromResponse(sourceCritiqueResponse.text);
-
-      if (sourceCritiqueResult.isSound) {
-        onProgressUpdate({ stage: 'TAMAMLANDI', status: 'success', message: 'Tüm kontrollerden başarıyla geçti.' });
-        return { answer: proposedAnswer, newNoteContent: newNoteContent || null };
-      } else {
-        lastCritique = sourceCritiqueResult.critique || `Model tarafından spesifik bir çelişki raporlanmadı, ancak ${attempt + 1}. denemede bir tutarsızlık tespit edildi.`;
-        console.warn(`AŞAMA 4 DENETİMİ BAŞARISIZ (Deneme ${attempt + 1}/${MAX_RETRIES}): ${lastCritique}. Yeniden deneniyor...`);
-        continue;
+          if (uniqueSources.length > 0) {
+              citations = `\n\n---\n\n### Kaynaklar\n- ${uniqueSources.join('\n- ')}`;
+          }
       }
+      
+      const finalAnswer = proposedAnswer! + citations;
+      return { answer: finalAnswer, newNoteContent: null };
+
     } catch (error) {
        console.error(`Düzeltilemeyen Hata (Deneme ${attempt + 1}/${MAX_RETRIES}):`, error);
        if (error instanceof Error) {

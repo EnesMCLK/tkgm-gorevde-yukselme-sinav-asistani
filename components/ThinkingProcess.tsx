@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { marked } from 'marked';
 import { ProgressUpdate } from '../services/geminiService';
 
 type OverallStatus = 'running' | 'cancelled' | 'error';
@@ -35,6 +36,19 @@ const ErrorStopIcon: React.FC = () => (
 );
 
 const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ updates, overallStatus, errorMessage }) => {
+    const [htmlErrorMessage, setHtmlErrorMessage] = useState('');
+
+    useEffect(() => {
+        const parseError = async () => {
+            if (overallStatus === 'error' && errorMessage) {
+                const parsed = await marked.parse(errorMessage);
+                setHtmlErrorMessage(parsed);
+            } else {
+                setHtmlErrorMessage('');
+            }
+        };
+        parseError();
+    }, [errorMessage, overallStatus]);
     
     if (overallStatus === 'cancelled' || overallStatus === 'error') {
         const isError = overallStatus === 'error';
@@ -47,9 +61,16 @@ const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ updates, overallStatu
                 <h3 className="mt-4 text-lg font-semibold text-red-700">
                     {isError ? 'İşlem Başarısız Oldu' : 'İşlem Durduruldu'}
                 </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                    {isError ? (errorMessage || defaultErrorMessage) : 'Yeni bir sorgu başlatabilirsiniz.'}
-                </p>
+                {isError ? (
+                    <div 
+                        className="mt-1 text-sm text-slate-500 prose prose-sm max-w-none text-center prose-strong:text-slate-600 prose-p:my-2"
+                        dangerouslySetInnerHTML={{ __html: htmlErrorMessage || `<p>${defaultErrorMessage}</p>` }}
+                    />
+                ) : (
+                    <p className="mt-1 text-sm text-slate-500">
+                        Yeni bir sorgu başlatabilirsiniz.
+                    </p>
+                )}
             </div>
         );
     }
