@@ -32,25 +32,76 @@
         background-color: #94a3b8;
       }
       
-      /* Style for emphasized keywords in the quote */
-      .prose blockquote strong {
-        color: #dc2626; /* red-600 */
+      /* --- ENHANCED ANSWER STYLES --- */
+
+      /* General prose enhancements for readability */
+      .prose {
+        color: #334155; /* slate-700 */
+        line-height: 1.7;
       }
 
-      /* Style for blockquotes to make citations stand out */
+      .prose strong, .prose b {
+        font-weight: 700; /* Bolder for emphasis */
+        color: #1e293b; /* slate-800 */
+      }
+
+      .prose em, .prose i {
+        color: #475569; /* slate-600 */
+      }
+      
+      /* Enhanced blockquote styling for citations */
       .prose blockquote {
         background-color: #f8fafc; /* slate-50 */
         border-left-width: 4px;
         border-left-color: #2563eb; /* blue-600 */
-        padding: 0.75rem 1.25rem;
+        padding: 1rem 1.25rem;
+        margin: 1.5em 0;
         font-style: italic;
-        color: #334155; /* slate-700 */
+        color: #475569; /* slate-600 */
+        border-radius: 0 0.5rem 0.5rem 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       }
-      .prose blockquote p:first-of-type::before {
-        content: none;
+      
+      .prose blockquote p {
+        margin: 0;
       }
+
+      .prose blockquote strong, .prose blockquote b {
+        color: #c2410c; /* orange-700 for high contrast */
+        font-weight: 700; /* bold */
+        font-style: normal; /* Make keywords pop inside italic text */
+      }
+
+      .prose blockquote p:first-of-type::before,
       .prose blockquote p:last-of-type::after {
         content: none;
+      }
+      
+      /* Robust styling for ordered lists to ensure proper rendering */
+      .prose ol {
+        list-style: none; /* Disable default markers */
+        counter-reset: ol-counter;
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+        padding-left: 0;
+      }
+
+      .prose ol > li {
+        position: relative;
+        counter-increment: ol-counter;
+        padding-left: 2em; /* Space for the counter */
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      
+      /* Custom-styled list markers */
+      .prose ol > li::before {
+        content: counter(ol-counter) ".";
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-weight: 600;
+        color: #475569; /* slate-600 */
       }
     </style>
   <script type="importmap">

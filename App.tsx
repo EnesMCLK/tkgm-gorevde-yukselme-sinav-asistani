@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { getAnswerFromNotes } from './services/geminiService';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { getAnswerFromNotes, ProgressUpdate } from './services/geminiService';
 import ThinkingProcess from './components/ThinkingProcess';
 import { marked } from 'marked';
 
@@ -40,14 +40,9 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// --- BAŞLANGIÇ BİLGİ NOTLARI ---
-// Bu notlar, asistanın bilgi tabanının temelini oluşturur.
-// Tüm sınav konularını kapsayacak şekilde genelleştirilmiştir.
 const initialNotes = `
 # ROL VE HEDEF
 Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, "NOTLAR" olarak tanımlanan bilgi kaynağını kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
-
-## BİLGİ KAYNAKLARI
 - **Birincil Kaynak:** Sana daha önce yüklenmiş olan **"TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Notları (2025)"** dokümanı senin temel bilgi havuzundur.
 - **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü görsel veya ek metin.
 - **Doğrulama Kaynakları:** T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr), TKGM Mevzuat Portalı (mevzuat.tkgm.gov.tr) ve TKGM resmi sitesi (tkgm.gov.tr).
@@ -96,7 +91,7 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 ---
 
 ## ÖZEL DURUM PROSEDÜRÜ: EKSİK/HATALI BİLGİ
-- Eğer "NOTLAR" dokümanında, yaptığın kontrol sonucunda güncel olmayan, eksik veya bir üst norma aykırı bir bilgi tespit edersen:
+- Eğer "NOTLAR" dokümanında, yaptığın kontrol sonucunda güncel olmayan, eksik veya bir üst norma ayırı bir bilgi tespit edersen:
   - Bu hatalı bilgiyi **kesinlikle kullanma**.
   - Cevabını, resmi kaynaklardan bulduğun doğru ve güncel bilgiye dayandır.
   - Cevabının "answer" kısmında bu durumu **açıkça belirt**.
@@ -107,7 +102,6 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 - Cevapların net, analitik ve doğrudan olmalıdır.
 - Dil bilgisi ve yazım kurallarına titizlikle uy.
 `;
-// --- NOTLARIN SONU ---
 
 const licenseText = `
 **Kaynak İçerik:**
@@ -199,57 +193,76 @@ const CameraModal: React.FC<{ onClose: () => void; onCapture: (file: File) => vo
     };
   }, []);
 
-  const handleCapture = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+  const takePicture = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (video && canvas && !error) {
       const context = canvas.getContext('2d');
       if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        canvas.toBlob((blob) => {
+        canvas.toBlob(blob => {
           if (blob) {
-            const imageFile = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
-            onCapture(imageFile);
+            const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            onCapture(file);
           }
-        }, 'image/jpeg');
+        }, 'image/jpeg', 0.95);
       }
     }
   };
 
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4" role="dialog" aria-modal="true" aria-labelledby="camera-title" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="camera-title"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         <header className="p-4 border-b flex justify-between items-center">
           <h2 id="camera-title" className="text-lg font-bold text-slate-800">Fotoğraf Çek</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
-        <div className="p-4 flex-grow bg-slate-900 flex justify-center items-center">
+        <main className="p-4 flex-grow flex items-center justify-center bg-slate-100 relative">
           {error ? (
-            <p className="text-red-400 text-center">{error}</p>
+             <div className="text-center text-red-600 bg-red-50 p-4 rounded-md">
+                <p className="font-semibold">Kamera Hatası</p>
+                <p>{error}</p>
+            </div>
           ) : (
-            <video ref={videoRef} autoPlay playsInline className="w-full h-auto max-h-[60vh] rounded" />
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto max-h-full object-contain rounded-md"></video>
           )}
-          <canvas ref={canvasRef} className="hidden" />
-        </div>
-        <footer className="p-4 border-t flex justify-center">
+          <canvas ref={canvasRef} className="hidden"></canvas>
+        </main>
+        <footer className="p-4 border-t flex justify-center items-center">
           <button 
-            onClick={handleCapture} 
+            onClick={takePicture} 
             disabled={!!error}
-            className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-2"
+            className="p-3 bg-white border-4 border-blue-600 rounded-full hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            aria-label="Fotoğrafı çek"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            <span>Fotoğrafı Çek</span>
+            <div className="w-10 h-10 bg-blue-600 rounded-full"></div>
           </button>
         </footer>
       </div>
     </div>
   );
 };
-
 
 const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
@@ -261,21 +274,14 @@ const App: React.FC = () => {
   const [isLicenseVisible, setIsLicenseVisible] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+  const [thinkingSteps, setThinkingSteps] = useState<ProgressUpdate[]>([]);
+
   const answerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const submissionControllerRef = useRef<AbortController | null>(null);
   const submittedQuestionRef = useRef<string>('');
   const rawAnswerRef = useRef<string>('');
-
-  const thinkingSteps = [
-    'Sorunuz analiz ediliyor ve ilgili kaynaklar belirleniyor.',
-    'Bilgiler resmi mevzuat (Kanun, Yönetmelik, Genelge) ile karşılaştırılıyor.',
-    'Olası eksik veya güncel olmayan bilgiler kontrol ediliyor.',
-    'Normlar hiyerarşisine göre en doğru cevap sentezleniyor.',
-    'Gerekçeli nihai cevap oluşturuluyor.',
-  ];
 
   const processImageFile = async (file: File) => {
      if (file.size > 16 * 1024 * 1024) { 
@@ -293,9 +299,7 @@ const App: React.FC = () => {
 
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      await processImageFile(file);
-    }
+    if (file) await processImageFile(file);
   };
   
   const handleCapture = async (file: File) => {
@@ -307,16 +311,10 @@ const App: React.FC = () => {
 
   const removeImage = useCallback(() => {
     setImage(null);
-    if(fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if(fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
   const handleCancel = useCallback(() => {
-    // "Anında durdurma" hissi için, API isteğini iptal et ve arayüz durumunu
-    // bu senkron olay yöneticisi içinde hemen güncelle.
-    // 'running' durumu kontrolü, işlem kullanıcı iptal etmeden hemen önce biterse
-    // oluşabilecek yarış koşullarını (race condition) önler.
     if (processStatus === 'running') {
       submissionControllerRef.current?.abort();
       setProcessStatus('cancelled');
@@ -337,72 +335,67 @@ const App: React.FC = () => {
     
     setProcessStatus('running');
     setAnswer('');
-    setFeedbackStatus('idle'); // Her yeni sorguda geri bildirimi sıfırla
-    setErrorMessage(null); // Her yeni sorguda hatayı sıfırla
+    setFeedbackStatus('idle');
+    setErrorMessage(null);
+    setThinkingSteps([]);
+
+    const handleProgressUpdate = (update: ProgressUpdate) => {
+        setThinkingSteps(prevSteps => [...prevSteps, update]);
+    };
 
     try {
       const result = await getAnswerFromNotes(
         currentNotes, 
         questionToSubmit, 
+        handleProgressUpdate,
         image ? { data: image.base64, mimeType: image.mimeType } : undefined,
         signal
       );
       
-      rawAnswerRef.current = result.answer; // Ham cevabı ileride kullanmak üzere sakla
+      rawAnswerRef.current = result.answer; 
 
       let newNotesContent = currentNotes;
       if (result.newNoteContent) {
-        // Kullanıcının isteği üzerine kategoriye ayırma kaldırıldı.
-        // Yeni bilgi, notların sonuna bir başlık ile eklenir.
         newNotesContent = `${currentNotes}\n\n---\n\n## YENİ BİLGİ GÜNCELLEMESİ\n\n${result.newNoteContent}`;
       }
       
       const formattedAnswer = await marked.parse(result.answer);
       
       setAnswer(formattedAnswer);
-      if (newNotesContent !== currentNotes) {
-        setCurrentNotes(newNotesContent);
-      }
+      if (newNotesContent !== currentNotes) setCurrentNotes(newNotesContent);
       setProcessStatus('success');
 
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        // İptal işlemi kullanıcı tarafından handleCancel içinde başlatıldı.
-        // Arayüz durumu anında geri bildirim için orada zaten güncellendi.
-        // Burada sadece isteğin başarıyla iptal edildiğini log'luyoruz.
-        console.log("İstek başarıyla iptal edildi ve yakalandı.");
+        console.log("İstek başarıyla iptal edildi.");
       } else {
-        // Beklenmedik, iptal dışı hataları yönet.
         console.error("Sistem hatası:", error);
         setErrorMessage(error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.");
         setProcessStatus('error');
-        setQuestion(submittedQuestionRef.current); // Kullanıcının sorusunu koru
+        setQuestion(submittedQuestionRef.current);
       }
     }
   }, [question, image, currentNotes, processStatus]);
   
   const handlePositiveFeedback = useCallback(() => {
+    if (feedbackStatus !== 'idle') return;
     setFeedbackStatus('positive');
-    if (window.va) {
-        window.va('event', 'Feedback', { 
-          feedback: 'positive', 
-          question: submittedQuestionRef.current,
-          answer: rawAnswerRef.current
-        });
-    }
-  }, []);
+    window.va?.('event', 'Feedback', { 
+        status: 'positive',
+        question: submittedQuestionRef.current,
+        answer_snippet: rawAnswerRef.current.substring(0, 100) 
+    });
+  }, [feedbackStatus]);
 
   const handleNegativeFeedback = useCallback(() => {
+    if (feedbackStatus !== 'idle') return;
     setFeedbackStatus('negative');
-    if (window.va) {
-      window.va('event', 'Feedback', { 
-        feedback: 'negative', 
+    window.va?.('event', 'Feedback', { 
+        status: 'negative',
         question: submittedQuestionRef.current,
-        answer: rawAnswerRef.current
-      });
-    }
-  }, []);
-
+        answer_snippet: rawAnswerRef.current.substring(0, 100)
+    });
+  }, [feedbackStatus]);
 
   useEffect(() => {
     if (processStatus === 'success' && answer && answerRef.current) {
@@ -433,13 +426,12 @@ const App: React.FC = () => {
       {isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />}
       <div className="flex flex-col min-h-screen">
         <Header />
-
         <main className="flex-grow w-full">
           <div className="py-6">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <form onSubmit={handleSubmit}>
-                  <div className="relative">
+                    <div className="relative">
                     <textarea
                       ref={textareaRef}
                       value={question}
@@ -510,7 +502,7 @@ const App: React.FC = () => {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px] flex items-center justify-center">
                 { (processStatus === 'running' || processStatus === 'cancelled' || processStatus === 'error') ? (
-                  <ThinkingProcess steps={thinkingSteps} status={processStatus} errorMessage={errorMessage} />
+                  <ThinkingProcess updates={thinkingSteps} overallStatus={processStatus} errorMessage={errorMessage} />
                 ) : (
                   answer && processStatus === 'success' && (
                     <div className='w-full'>
@@ -522,12 +514,12 @@ const App: React.FC = () => {
                           </svg>
                         </summary>
                         <div className="mt-4 pl-4 border-l-2 border-slate-200 space-y-2">
-                            {thinkingSteps.map((step, index) => (
+                            {thinkingSteps.filter(s => s.stage !== 'TAMAMLANDI').map((step, index) => (
                                 <div key={index} className="flex items-center text-sm text-slate-600">
                                     <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>{step}</span>
+                                    <span>{step.message}</span>
                                 </div>
                             ))}
                         </div>
@@ -583,7 +575,6 @@ const App: React.FC = () => {
             </div>
           )}
         </main>
-
         <footer className="bg-white mt-auto">
           <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
             <p>Bu asistan, yalnızca çalışma amacıyla kullanılan bir yapay zeka uygulamasıdır.</p>

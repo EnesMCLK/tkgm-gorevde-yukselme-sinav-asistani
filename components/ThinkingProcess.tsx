@@ -1,11 +1,11 @@
+import React from 'react';
+import { ProgressUpdate } from '../services/geminiService';
 
-import React, { useEffect, useState } from 'react';
-
-type ProcessStatus = 'running' | 'cancelled' | 'error';
+type OverallStatus = 'running' | 'cancelled' | 'error';
 
 interface ThinkingProcessProps {
-  steps: string[];
-  status: ProcessStatus;
+  updates: ProgressUpdate[];
+  overallStatus: OverallStatus;
   errorMessage?: string | null;
 }
 
@@ -22,45 +22,27 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
-const StopIcon: React.FC = () => (
+const RetryIcon: React.FC = () => (
+     <svg xmlns="http://www.w3.org/2000/svg" className="animate-spin h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 4a12.008 12.008 0 0116 0M20 20a12.008 12.008 0 01-16 0" />
+    </svg>
+);
+
+const ErrorStopIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
     </svg>
 );
 
-
-const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status, errorMessage }) => {
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
-
-    useEffect(() => {
-        if (status !== 'running') {
-            return;
-        }
-        
-        setCurrentStepIndex(0);
-
-        const intervalId = setInterval(() => {
-            // Animasyonun son adıma ulaştığında ilerlemeyi durdur.
-            // Bu, son adımın spinner ikonunun, API'den gerçek cevap gelene kadar
-            // dönmeye devam etmesini sağlar, böylece senkronizasyon sağlanır.
-            setCurrentStepIndex(prev => (prev < steps.length - 1 ? prev + 1 : prev));
-        }, 1500);
-
-        // 'status' değiştiğinde (örn: 'success' veya 'cancelled' olduğunda)
-        // veya bileşen ekrandan kaldırıldığında interval'ı temizle.
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, [status, steps.length]);
-
-    if (status === 'cancelled' || status === 'error') {
-        const isError = status === 'error';
+const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ updates, overallStatus, errorMessage }) => {
+    
+    if (overallStatus === 'cancelled' || overallStatus === 'error') {
+        const isError = overallStatus === 'error';
         const defaultErrorMessage = 'Lütfen daha sonra tekrar deneyiniz.';
-
         return (
             <div className="text-center p-4 w-full">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                   <StopIcon />
+                   <ErrorStopIcon />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-red-700">
                     {isError ? 'İşlem Başarısız Oldu' : 'İşlem Durduruldu'}
@@ -72,28 +54,46 @@ const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ steps, status, errorM
         );
     }
 
+    if (updates.length === 0 && overallStatus === 'running') {
+        return (
+             <div className="flex flex-col items-center justify-center p-4">
+                <SpinnerIcon />
+                <p className="mt-2 text-slate-600">Bağlantı kuruluyor...</p>
+            </div>
+        )
+    }
+
     return (
         <div className="w-full">
             <h3 className="text-lg font-semibold text-slate-800 mb-6 text-center">Asistanınız Düşünüyor...</h3>
             <div className="space-y-4">
-                {steps.map((step, index) => {
-                    const isCompleted = index < currentStepIndex;
-                    const isActive = index === currentStepIndex;
+                {updates.map((update, index) => {
+                    const isLastStep = index === updates.length - 1;
+                    const isCompleted = !isLastStep;
+                    const isActive = isLastStep && overallStatus === 'running';
+                    
+                    let IconComponent;
+                    if (isCompleted) {
+                        IconComponent = <CheckIcon />;
+                    } else if (isActive) {
+                        IconComponent = update.status === 'retrying' ? <RetryIcon /> : <SpinnerIcon />;
+                    } else {
+                        IconComponent = <div className="w-5 h-5 rounded-full bg-slate-200" />;
+                    }
 
                     return (
-                        <div key={index} className="flex items-center transition-all duration-300 ease-in-out">
-                            <div className="w-6 h-6 mr-4 flex-shrink-0 flex items-center justify-center">
-                                {isCompleted ? 
-                                  <CheckIcon /> : 
-                                  (isActive ? <SpinnerIcon /> : <div className="w-5 h-5 rounded-full bg-slate-200" />) 
-                                }
+                        <div key={index} className="flex items-start transition-all duration-300 ease-in-out">
+                            <div className="w-6 h-6 mr-4 mt-0.5 flex-shrink-0 flex items-center justify-center">
+                               {IconComponent}
                             </div>
                             <span className={`
                                 ${isCompleted ? 'text-slate-500 line-through opacity-70' : ''} 
-                                ${isActive ? 'text-slate-800 font-semibold' : 'text-slate-500'}
-                                transition-all duration-300
+                                ${isActive && update.status === 'retrying' ? 'text-amber-600 font-semibold' : ''}
+                                ${isActive && update.status === 'running' ? 'text-slate-800 font-semibold' : ''}
+                                ${!isActive && !isCompleted ? 'text-slate-500' : ''}
+                                transition-colors duration-300
                             `}>
-                                {step}
+                                {update.message}
                             </span>
                         </div>
                     );
