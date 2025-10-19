@@ -42,9 +42,9 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const initialNotes = `
 # ROL VE HEDEF
-Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve Unvan Değişikliği Sınavı ve ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, **SADECE İZİN VERİLEN RESMİ WEB KAYNAKLARINI** kullanarak, bir hukuk uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
+Sen, Tapu ve Kadastro Genel Müdürlüğü (TKGM) Görevde Yükselme ve özellikle **Harita Mühendisliği Unvan Değişikliği Sınavı** ile ilgili Türk mevzuatı (Anayasa, Kanunlar, Yönetmelikler vb.) konularında uzman, analitik ve titiz bir yapay zeka asistanısın. Birincil görevin, sana sunulan sınav sorularını, **SADECE İZİN VERİLEN RESMİ WEB KAYNAKLARINI** kullanarak, bir hukuk ve mühendislik uzmanı titizliğiyle analiz etmek ve mutlak surette doğru olan şıkkı, gerekçeleriyle birlikte tespit etmektir.
 
-- **Birincil Bilgi Kaynağı (KESİN KURAL):** Senin temel bilgi havuzun statik bir doküman DEĞİLDİR. Bilgiyi, Google Arama aracını kullanarak **SADECE ve KESİNLİKLE** resmi T.C. mevzuat ve devlet sitelerinden bulacaksın. **İzin verilen alan adları şunlardır: \`mevzuat.gov.tr\`, \`mevzuat.tkgm.gov.tr\`, \`*.tkgm.gov.tr\` ve diğer tüm \`*.gov.tr\` uzantılı siteler.** Bu kaynaklar dışındaki hiçbir web sitesini (özel hukuk büroları, haber siteleri, forumlar vb.) KESİNLİKLE kullanmayacaksın. Bu metin, senin bilgi kaynağın değil, DÜŞÜNME VE CEVAP VERME SÜRECİNİ belirleyen bir rehberdir.
+- **Birincil Bilgi Kaynağı (KESİN KURAL):** Senin temel bilgi havuzun statik bir doküman DEĞİLDİR ve **NotebookLM gibi harici kullanıcı hesaplarına bağlanamazsın.** Bilgiyi, Google Arama aracını kullanarak **SADECE ve KESİNLİKLE** resmi T.C. mevzuat ve devlet sitelerinden bulacaksın. **İzin verilen alan adları şunlardır: \`mevzuat.gov.tr\`, \`mevzuat.tkgm.gov.tr\`, \`*.tkgm.gov.tr\` ve diğer tüm \`*.gov.tr\` uzantılı siteler.** Bu kaynaklar dışındaki hiçbir web sitesini (özel hukuk büroları, haber siteleri, forumlar vb.) KESİNLİKLE kullanmayacaksın. Bu metin, senin bilgi kaynağın değil, DÜŞÜNME VE CEVAP VERME SÜRECİNİ belirleyen bir rehberdir.
 - **İkincil Kaynaklar:** Soruda atıfta bulunulan veya analiz için gerekli olan her türlü görsel veya ek metin.
 
 # TEMEL FELSEFE: ARAŞTIR, KONTROL ET VE SENTEZLE
@@ -61,7 +61,7 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 
 ### Adım 1: Soru Analizi (Ne Soruluyor?)
 - Sorunun kökünü dikkatlice oku ve neyi sorduğunu tam olarak anla.
-- Sorunun anahtar kelimelerini, konusunu (örn: "Devlet memurlarının yıllık izin hakkı", "kadastro tespiti", "imar planı değişikliği") ve sorguladığı spesifik hukuki durumu tespit et.
+- Sorunun anahtar kelimelerini, konusunu (örn: "Devlet memurlarının yıllık izin hakkı", "kadastro tespiti", "imar planı değişikliği", "Harita Mühendisliği yetkileri") ve sorguladığı spesifik hukuki durumu tespit et.
 
 ### Adım 2: WEB ARAŞTIRMASI ve Bilgi Doğrulama
 - Soruyla ilgili olabilecek tüm bilgileri, Google Arama aracını kullanarak **sadece izin verilen resmi kaynaklardan (\`mevzuat.gov.tr\`, \`mevzuat.tkgm.gov.tr\`, \`*.tkgm.gov.tr\`, \`*.gov.tr\`)** topla.
@@ -87,7 +87,6 @@ Bir soru ile karşılaştığında, aşağıdaki adımları sırasıyla ve eksik
 
 ### Adım 6: Nihai Karar ve Gerekçelendirme
 - Tespit ettiğin doğru şıkkı, neden doğru olduğunu ve diğer şıkların neden yanlış olduğunu açık ve anlaşılır bir dille ifade eden nihai cevabını oluştur. Cevaplamaya başlarken büyük harfle başlamalı ve yazım kurallarına titizlikle uymalısın.
-- Cevabının sonunda, kullandığın web kaynaklarını listele.
 
 ## KESİN KURALLAR
 - Mutlak öncelik doğruluk, güncellik ve normlar hiyerarşisidir. **Bilgi kaynağın her zaman SADECE izin verilen RESMİ WEB KAYNAKLARI (\`*.gov.tr\`) olmalıdır.**
@@ -382,6 +381,65 @@ const App: React.FC = () => {
       removeImage();
     }
   }, [processStatus, removeImage]);
+  
+  const executeQuery = useCallback(async (questionToSubmit: string, userCritique?: string) => {
+      submissionControllerRef.current = new AbortController();
+      setProcessStatus('running');
+      setAnswer('');
+      setErrorMessage(null);
+      setThinkingSteps([]);
+
+      if (!userCritique) {
+        setFeedbackStatus('idle');
+      }
+      
+      const handleProgressUpdate = (update: ProgressUpdate) => {
+          setThinkingSteps(prevSteps => [...prevSteps, update]);
+      };
+
+      try {
+        const result = await getAnswerFromNotes(
+          currentNotes, 
+          questionToSubmit, 
+          handleProgressUpdate,
+          {
+            image: image ? { data: image.base64, mimeType: image.mimeType } : undefined,
+            signal: submissionControllerRef.current.signal,
+            userCritique
+          }
+        );
+        
+        rawAnswerRef.current = result.answer; 
+
+        if (result.newNoteContent) {
+          setCurrentNotes(prev => `${prev}\n\n---\n\n## YENİ BİLGİ GÜNCELLEMESİ\n\n${result.newNoteContent}`);
+        }
+        
+        const formattedAnswer = await marked.parse(result.answer);
+        
+        setAnswer(formattedAnswer);
+        setProcessStatus('success');
+        setFeedbackStatus('idle');
+
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log("İstek iptal edildi.");
+        } else {
+          console.error("Sistem hatası:", error);
+          const message = error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.";
+          
+          if (message.startsWith('NO_INFO_FOUND:')) {
+              setErrorMessage(message.replace('NO_INFO_FOUND: ', ''));
+          } else {
+              setErrorMessage(message);
+          }
+
+          setProcessStatus('error');
+          setQuestion(submittedQuestionRef.current);
+          setFeedbackStatus('idle');
+        }
+      }
+  }, [currentNotes, image]);
 
   const handleSubmit = useCallback(async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
@@ -389,54 +447,25 @@ const App: React.FC = () => {
     const questionToSubmit = question.trim();
     if (!questionToSubmit) return;
 
-    submissionControllerRef.current = new AbortController();
     submittedQuestionRef.current = questionToSubmit;
+    executeQuery(questionToSubmit);
     
-    setProcessStatus('running');
-    setAnswer('');
-    setFeedbackStatus('idle');
-    setErrorMessage(null);
-    setThinkingSteps([]);
+  }, [question, processStatus, executeQuery]);
 
-    const handleProgressUpdate = (update: ProgressUpdate) => {
-        setThinkingSteps(prevSteps => [...prevSteps, update]);
-    };
+  const handleCorrectionSubmit = useCallback(async (reason: string) => {
+    setIsFeedbackModalOpen(false);
+    setFeedbackStatus('negative');
 
-    try {
-      const result = await getAnswerFromNotes(
-        currentNotes, 
-        questionToSubmit, 
-        handleProgressUpdate,
-        {
-          image: image ? { data: image.base64, mimeType: image.mimeType } : undefined,
-          signal: submissionControllerRef.current.signal
-        }
-      );
-      
-      rawAnswerRef.current = result.answer; 
+    window.va?.('event', 'Feedback', { 
+        status: 'negative_with_reason',
+        question: submittedQuestionRef.current,
+        answer_snippet: rawAnswerRef.current.substring(0, 100),
+        reason: reason
+    });
+    
+    executeQuery(submittedQuestionRef.current, reason);
 
-      let newNotesContent = currentNotes;
-      if (result.newNoteContent) {
-        newNotesContent = `${currentNotes}\n\n---\n\n## YENİ BİLGİ GÜNCELLEMESİ\n\n${result.newNoteContent}`;
-      }
-      
-      const formattedAnswer = await marked.parse(result.answer);
-      
-      setAnswer(formattedAnswer);
-      if (newNotesContent !== currentNotes) setCurrentNotes(newNotesContent);
-      setProcessStatus('success');
-
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log("İstek başarıyla iptal edildi.");
-      } else {
-        console.error("Sistem hatası:", error);
-        setErrorMessage(error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.");
-        setProcessStatus('error');
-        setQuestion(submittedQuestionRef.current);
-      }
-    }
-  }, [question, image, currentNotes, processStatus]);
+  }, [executeQuery]);
   
   const handlePositiveFeedback = useCallback(() => {
     if (feedbackStatus !== 'idle') return;
@@ -453,59 +482,6 @@ const App: React.FC = () => {
     setIsFeedbackModalOpen(true);
   }, [feedbackStatus]);
   
-  const handleCorrectionSubmit = useCallback(async (reason: string) => {
-    setIsFeedbackModalOpen(false);
-    setFeedbackStatus('negative');
-
-    window.va?.('event', 'Feedback', { 
-        status: 'negative_with_reason',
-        question: submittedQuestionRef.current,
-        answer_snippet: rawAnswerRef.current.substring(0, 100),
-        reason: reason
-    });
-
-    submissionControllerRef.current = new AbortController();
-    setProcessStatus('running');
-    setAnswer('');
-    setErrorMessage(null);
-    setThinkingSteps([]);
-
-    const handleProgressUpdate = (update: ProgressUpdate) => {
-        setThinkingSteps(prevSteps => [...prevSteps, update]);
-    };
-
-    try {
-      const result = await getAnswerFromNotes(
-        currentNotes, 
-        submittedQuestionRef.current,
-        handleProgressUpdate,
-        {
-          image: image ? { data: image.base64, mimeType: image.mimeType } : undefined,
-          signal: submissionControllerRef.current.signal,
-          userCritique: reason
-        }
-      );
-      
-      rawAnswerRef.current = result.answer;
-      const formattedAnswer = await marked.parse(result.answer);
-      
-      setAnswer(formattedAnswer);
-      setProcessStatus('success');
-      setFeedbackStatus('idle');
-
-    } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-            console.log("Düzeltme isteği iptal edildi.");
-        } else {
-            console.error("Düzeltme sırasında sistem hatası:", error);
-            setErrorMessage(error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.");
-            setProcessStatus('error');
-            setQuestion(submittedQuestionRef.current);
-        }
-    }
-  }, [currentNotes, image, feedbackStatus]);
-
-
   useEffect(() => {
     if (processStatus === 'success' && answer && answerRef.current) {
       answerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });

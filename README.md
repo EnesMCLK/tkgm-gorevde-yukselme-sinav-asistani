@@ -18,7 +18,6 @@ TKGM'nin görevde yükselme sınavları, Anayasa'dan kanunlara, yönetmeliklerde
 * **⚖️ Normlar Hiyerarşisi Prensibi:** Asistan, bir soruya cevap verirken daima en üstün hukuki normu (Anayasa > Kanun > Cumhurbaşkanlığı Kararnamesi > Yönetmelik > Genelge) esas alır.
 * **🔄 Güncellik Kontrolü:** Tüm bilgileri **T.C. Mevzuat Bilgi Sistemi (mevzuat.gov.tr)** gibi resmi kaynaklardan teyit ederek en güncel durumu yansıtır.
 * **💡 Analitik Cevaplama:** Sadece bilgiyi aktarmakla kalmaz, farklı mevzuat maddeleri arasındaki bağlantıları kurarak analitik ve gerekçeli cevaplar üretir.
-* **📚 Kaynak Gösterme:** Verilen her bilginin dayandığı kanun, yönetmelik veya genelge maddesini açıkça belirterek güvenilirlik sağlar.
 
 ## 🏛️ Çalışma Mimarisi ve Temel Prensibi
 

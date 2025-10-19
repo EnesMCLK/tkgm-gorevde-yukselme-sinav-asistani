@@ -34,15 +34,8 @@ interface GetAnswerOptions {
 }
 
 const callGemini = async (params: GenerateContentParameters, signal?: AbortSignal): Promise<GenerateContentResponse> => {
-    const generateContentPromise = ai.models.generateContent(params);
-    if (signal) {
-        if (signal.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
-        const abortPromise = new Promise<never>((_, reject) => {
-            signal.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')), { once: true });
-        });
-        return Promise.race([generateContentPromise, abortPromise]);
-    }
-    return generateContentPromise;
+    // Gemini SDK'sı AbortSignal'ı yerel olarak destekler, bu nedenle özel Promise.race sarmalayıcısına gerek yoktur.
+    return ai.models.generateContent(params, { signal });
 }
 
 const parseJsonFromResponse = (text?: string) => {
@@ -167,7 +160,7 @@ ${question}${imageInstruction}
         }
 
         if (!researchSummary?.trim()) {
-            throw new Error(`Web araştırması sonucunda bu soruyu cevaplayacak ilgili bir bilgi bulunamadı.`);
+            throw new Error(`NO_INFO_FOUND: İzin verilen resmi kaynaklarda (\`*.gov.tr\`) sorunuzu yanıtlayacak spesifik bir bilgi bulunamadı. Lütfen sorunuzu farklı bir şekilde sormayı deneyin.`);
         }
         lastCritique = null;
       }
@@ -271,19 +264,7 @@ ${proposedAnswer}
       // =================================================================================
       onProgressUpdate({ stage: 'TAMAMLANDI', status: 'success', message: 'Tüm kontrollerden başarıyla geçti.' });
       
-      let citations = '';
-      if (sources && sources.length > 0) {
-          const sourceLinks = sources
-              .map(web => `[${web.title || web.uri}](${web.uri})`);
-          
-          const uniqueSources = [...new Set(sourceLinks)];
-
-          if (uniqueSources.length > 0) {
-              citations = `\n\n---\n\n### Kaynaklar\n- ${uniqueSources.join('\n- ')}`;
-          }
-      }
-      
-      const finalAnswer = proposedAnswer! + citations;
+      const finalAnswer = proposedAnswer!;
       return { answer: finalAnswer, newNoteContent: null };
 
     } catch (error) {
@@ -295,6 +276,10 @@ ${proposedAnswer}
          // API anahtarı gibi kritik, düzeltilemez hataları kullanıcıya hemen bildir.
          if (error.message.toLowerCase().includes('api key')) {
             throw new Error("API anahtarı geçersiz veya yapılandırılmamış. Lütfen sistem yöneticisi ile iletişime geçin.");
+         }
+         // Yeniden denemeyecek, sonlandırıcı hataları fırlat
+         if (error.message.startsWith('NO_INFO_FOUND:')) {
+             throw error;
          }
          // Hatanın kaynağını "SİSTEM HATASI" olarak etiketle
          lastCritique = `SİSTEM HATASI: ${error.message}`;
