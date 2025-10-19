@@ -33,8 +33,6 @@ interface GetAnswerOptions {
   userCritique?: string;
 }
 
-const MAX_RETRIES = 4;
-
 const callGemini = async (params: GenerateContentParameters, signal?: AbortSignal): Promise<GenerateContentResponse> => {
     const generateContentPromise = ai.models.generateContent(params);
     if (signal) {
@@ -70,12 +68,16 @@ export const getAnswerFromNotes = async (
   options: GetAnswerOptions = {}
 ): Promise<GeminiResponse> => {
   const { image, signal, userCritique } = options;
-  let lastCritique: string | null = userCritique || null; 
+  // Geri bildirimleri, kaynağını belirtecek şekilde bir önekle etiketle
+  let lastCritique: string | null = userCritique ? `KULLANICI GERİ BİLDİRİMİ: ${userCritique}` : null;
   let researchSummary: string | null = null;
   let proposedAnswer: string | null = null;
   let sources: Array<{ uri: string; title?: string }> = [];
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+  let attempt = 0;
+  // Sonsuz döngü: Başarılı bir cevap bulunana veya kullanıcı tarafından iptal edilene kadar denemeye devam eder.
+  while (true) {
+    attempt++;
     if (signal?.aborted) throw new DOMException('The operation was aborted.', 'AbortError');
 
     try {
@@ -83,26 +85,49 @@ export const getAnswerFromNotes = async (
       // AŞAMA 1: ARAŞTIRMA (WEB ÖNCELİKLİ)
       // =================================================================================
       if (!researchSummary) {
+        let progressMessage = 'Soru analiz ediliyor ve güvenilir web kaynakları taranıyor...';
+        if (lastCritique) {
+            if (lastCritique.startsWith('KULLANICI GERİ BİLDİRİMİ:')) {
+                progressMessage = `Kullanıcı geri bildirimi alındı, cevap yeniden oluşturuluyor... (Deneme ${attempt})`;
+            } else if (lastCritique.startsWith('MANTIKSAL HATA:')) {
+                progressMessage = `Mantıksal tutarsızlık tespit edildi, süreç yeniden başlatılıyor... (Deneme ${attempt})`;
+            } else if (lastCritique.startsWith('SİSTEM HATASI:')) {
+                progressMessage = `Sistem hatası tespit edildi, yeniden deneme yapılıyor... (Deneme ${attempt})`;
+            } else {
+                progressMessage = `Geri bildirim alındı, yeniden araştırılıyor... (Deneme ${attempt})`;
+            }
+        }
+
         onProgressUpdate({
           stage: 'ARAŞTIRMA',
           status: lastCritique ? 'retrying' : 'running',
-          message: lastCritique 
-            ? userCritique && attempt === 0
-                ? `Kullanıcı geri bildirimi alındı, cevap düzeltiliyor...`
-                : `Hata tespit edildi, kaynaklar yeniden araştırılıyor... (Deneme ${attempt + 1})`
-            : 'Soru analiz ediliyor ve güvenilir web kaynakları taranıyor...',
-          attempt: attempt + 1
+          message: progressMessage,
+          attempt: attempt
         });
-
-        const critiqueFeedback = lastCritique ? `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt}) bir tutarsızlık bulundu.\nTESPİT EDİLEN HATA: ${lastCritique}\nLütfen Araştırma Özeti'ni (researchSummary) oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK web'de tekrar ve daha dikkatli bir araştırma yap. Özellikle bu hataya sebep olan istisna veya detayları bu sefer özete dahil ettiğinden emin ol.` : "";
+        
+        // Sadece mantıksal ve kullanıcı geri bildirimlerini modele gönder. Sistem hatalarını gönderme.
+        let critiqueForModel = "";
+        if (lastCritique) {
+            if (lastCritique.startsWith('MANTIKSAL HATA:')) {
+                const errorText = lastCritique.substring('MANTIKSAL HATA: '.length);
+                critiqueForModel = `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt - 1}) bir tutarsızlık bulundu.\nTESPİT EDİLEN HATA: ${errorText}\nLütfen Araştırma Özeti'ni (researchSummary) oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK web'de tekrar ve daha dikkatli bir araştırma yap. Özellikle bu hataya sebep olan istisna veya detayları bu sefer özete dahil ettiğinden emin ol.`;
+            } else if (lastCritique.startsWith('KULLANICI GERİ BİLDİRİMİ:')) {
+                const errorText = lastCritique.substring('KULLANICI GERİ BİLDİRİMİ: '.length);
+                critiqueForModel = `\n\n# KULLANICI GERİ BİLDİRİMİ\nTESPİT EDİLEN HATA: ${errorText}\nLütfen bu geri bildirimi dikkate alarak yeniden araştırma yap.`;
+            }
+        }
+        
         const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
 
         const researchPrompt = `
 # GÖREV: UZMAN HUKUK ARAŞTIRMACISI (WEB ARAMA)
-(Deneme ${attempt + 1}/${MAX_RETRIES})
-Sen, analitik ve titiz bir yapay zeka asistanının birinci aşamasısın. Görevin, sana verilen soruyu Google Arama'yı kullanarak, güvenilir Türk mevzuat kaynaklarından (özellikle mevzuat.gov.tr, tkgm.gov.tr gibi .gov.tr uzantılı resmi siteler) araştırmaktır.
+(Deneme ${attempt})
+Sen, analitik ve titiz bir yapay zeka asistanının birinci aşamasısın. Görevin, sana verilen soruyu Google Arama'yı kullanarak araştırmaktır.
+# KESİN ARAMA KURALI
+Web araştırmanı **SADECE VE SADECE** şu alan adları ile sınırlandırmalısın: \`mevzuat.gov.tr\`, \`mevzuat.tkgm.gov.tr\`, \`*.tkgm.gov.tr\` ve diğer tüm \`*.gov.tr\` uzantılı resmi devlet siteleri. Bunun dışındaki HİÇBİR kaynağı (haber siteleri, forumlar, özel hukuk büroları vb.) KESİNLİKLE kullanma.
+
 "SİSTEM NOTLARI" sadece senin çalışma prensiplerini belirler, bilgi kaynağı DEĞİLDİR. Bilgiyi SADECE web'den bulacaksın.
-${critiqueFeedback}
+${critiqueForModel}
 ## SÜREÇ
 1.  **Soru Analizi:** Sana verilen soruyu ve varsa görseli dikkatlice analiz et.
 2.  **Web Araştırması:** Google Arama'yı kullanarak soruyu cevaplamak için gereken en güncel ve doğru hukuki normları bul. Bilgiyi normlar hiyerarşisine (Anayasa > Kanun > Yönetmelik vb.) göre doğrula.
@@ -128,8 +153,6 @@ ${question}${imageInstruction}
             contents: researchRequestContents,
             config: {
                 tools: [{ googleSearch: {} }],
-                // responseMimeType ve responseSchema, 'tools' ile birlikte kullanılamadığı için kaldırıldı.
-                // Prompt, modelin text response içinde bir JSON dizesi döndürmesini sağlamak için tasarlandı.
             },
         }, signal);
 
@@ -157,18 +180,23 @@ ${question}${imageInstruction}
             stage: 'SENTEZ', 
             status: lastCritique ? 'retrying' : 'running', 
             message: lastCritique
-              ? `Mantıksal hata tespit edildi, cevap yeniden oluşturuluyor... (Deneme ${attempt + 1})`
+              ? `Mantıksal hata tespit edildi, cevap yeniden oluşturuluyor... (Deneme ${attempt})`
               : 'Doğrulanan bilgilerle bir cevap taslağı oluşturuluyor...', 
-            attempt: attempt + 1 
+            attempt: attempt 
         });
         
-        const synthesisCritiqueFeedback = lastCritique ? `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt}), oluşturulan cevap mantıksal denetimden geçemedi.\nTESPİT EDİLEN HATA: ${lastCritique}\nLütfen cevabı oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK "ARAŞTIRMA ÖZETİ"ni tekrar yorumla.` : "";
+        let synthesisCritiqueForModel = "";
+        if (lastCritique?.startsWith('MANTIKSAL HATA:')) {
+            const errorText = lastCritique.substring('MANTIKSAL HATA: '.length);
+            synthesisCritiqueForModel = `\n\n# ÖNEMLİ DÜZELTME\nBir önceki denemede (Deneme ${attempt - 1}), oluşturulan cevap mantıksal denetimden geçemedi.\nTESPİT EDİLEN HATA: ${errorText}\nLütfen cevabı oluştururken BU HATAYI GÖZ ÖNÜNDE BULUNDURARAK "ARAŞTIRMA ÖZETİ"ni tekrar yorumla.`;
+        }
+        
         const imageInstruction = image ? "\n\nNOT: Kullanıcı soruyla ilgili bir görsel de sağlamıştır. Cevabını oluştururken bu görseldeki metni ve içeriği de dikkate al." : "";
         
         const synthesisPrompt = `
 # ROL VE HEDEF
 Sen, bir yapay zeka asistanının ikinci aşamasısın. Görevin, sana sunulan sınav sorusunu ve "ARAŞTIRMA ÖZETİ"ni kullanarak doğru şıkkı gerekçeleriyle tespit etmektir.
-${synthesisCritiqueFeedback}
+${synthesisCritiqueForModel}
 # KESİN KURAL
 Cevabını oluştururken **yalnızca** 'ARAŞTIRMA ÖZETİ' metnini kullanacaksın. Bu özet, web'den bulunan tek doğru kaynaktır.
 ## SÜREÇ
@@ -201,7 +229,7 @@ ${question}${imageInstruction}
       // =================================================================================
       // AŞAMA 3: MANTIKSAL DENETİM
       // =================================================================================
-      onProgressUpdate({ stage: 'MANTIKSAL_DENETİM', status: 'running', message: 'Cevabın kaynaklarla mantıksal tutarlılığı denetleniyor...', attempt: attempt + 1 });
+      onProgressUpdate({ stage: 'MANTIKSAL_DENETİM', status: 'running', message: 'Cevabın kaynaklarla mantıksal tutarlılığı denetleniyor...', attempt: attempt });
       
       const logicalCritiquePrompt = `
 # ROL: HUKUK UZMANI DENETÇİ (MANTIKSAL TUTARLILIK)
@@ -230,10 +258,11 @@ ${proposedAnswer}
       const logicalCritiqueResult = parseJsonFromResponse(logicalCritiqueResponse.text);
 
       if (!logicalCritiqueResult.isValid) {
-        lastCritique = logicalCritiqueResult.critique || "Cevap, soruyla veya kullanılan kaynak özetiyle mantıksal olarak tutarsız.";
-        console.warn(`AŞAMA 3 DENETİMİ BAŞARISIZ (Deneme ${attempt + 1}/${MAX_RETRIES}): ${lastCritique}. Kaynak özeti tutarsızlığı nedeniyle yeniden araştırma yapılacak...`);
-        researchSummary = null; // Araştırma özetini geçersiz kıl
-        proposedAnswer = null; // Cevap taslağını geçersiz kıl
+        // Hatanın kaynağını "MANTIKSAL HATA" olarak etiketle
+        lastCritique = `MANTIKSAL HATA: ${logicalCritiqueResult.critique || "Cevap, soruyla veya kullanılan kaynak özetiyle mantıksal olarak tutarsız."}`;
+        console.warn(`AŞAMA 3 DENETİMİ BAŞARISIZ (Deneme ${attempt}): ${lastCritique}. Cevap yeniden sentezlenecek...`);
+        // Sadece cevabı sıfırla, araştırmayı değil. Bu, döngüyü daha verimli hale getirir.
+        proposedAnswer = null;
         continue;
       }
 
@@ -258,17 +287,23 @@ ${proposedAnswer}
       return { answer: finalAnswer, newNoteContent: null };
 
     } catch (error) {
-       console.error(`Düzeltilemeyen Hata (Deneme ${attempt + 1}/${MAX_RETRIES}):`, error);
+       console.error(`Hata tespit edildi, yeniden denenecek (Deneme ${attempt}):`, error);
        if (error instanceof Error) {
-         if (error.name === 'AbortError') throw error;
-         if (error.message.includes("Asistan mantıksal bir tutarsızlık tespit etti") || error.message.toLowerCase().includes('api key') || error.message.includes("bu soruyu cevaplayacak ilgili bir bilgi bulunamadı")) {
-           throw error;
+         if (error.name === 'AbortError') {
+             throw error; // Kullanıcı iptal ettiyse döngüyü kır ve hatayı fırlat.
          }
-         throw new Error(`API çağrısında düzeltilemeyen bir hata oluştu (Deneme ${attempt + 1}): ${error.message}`);
+         // API anahtarı gibi kritik, düzeltilemez hataları kullanıcıya hemen bildir.
+         if (error.message.toLowerCase().includes('api key')) {
+            throw new Error("API anahtarı geçersiz veya yapılandırılmamış. Lütfen sistem yöneticisi ile iletişime geçin.");
+         }
+         // Hatanın kaynağını "SİSTEM HATASI" olarak etiketle
+         lastCritique = `SİSTEM HATASI: ${error.message}`;
+       } else {
+         lastCritique = `SİSTEM HATASI: ${String(error)}`;
        }
-       throw new Error(`Bilinmeyen bir hata oluştu (Deneme ${attempt + 1}): ${String(error)}`);
+       // Hata durumunda tüm süreci baştan başlatmak için durumu sıfırla.
+       researchSummary = null;
+       proposedAnswer = null;
     }
   }
-
-  throw new Error(`Asistan, ${MAX_RETRIES} deneme sonunda bile tutarlı bir cevap üretemedi.\n\n**Son tespit edilen sorun:** ${lastCritique || "Bilinmeyen bir tutarsızlık tespit edildi."}`);
 };
