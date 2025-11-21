@@ -42,14 +42,41 @@ const parseJsonFromResponse = (text?: string) => {
     if (!text) {
         throw new Error("Asistandan bir yanıt alınamadı. Yanıt, güvenlik filtreleri tarafından engellenmiş veya geçersiz olabilir.");
     }
+    
+    // 1. Regex ile JSON kod bloğunu yakalamaya çalış (Markdown blokları içinde)
+    const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)\s*```/i);
+    if (jsonBlockMatch && jsonBlockMatch[1]) {
+        try {
+            return JSON.parse(jsonBlockMatch[1]);
+        } catch (e) {
+            // Blok bulundu ama parse edilemedi, diğer yöntemlere geç
+        }
+    }
+
+    // 2. Blok yoksa veya parse edilemediyse, metnin içindeki ilk '{' ve son '}' arasını al
+    // Bu, modelin sohbet metni arasına gömdüğü JSON'ları bulur.
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const potentialJson = text.substring(firstBrace, lastBrace + 1);
+        try {
+            return JSON.parse(potentialJson);
+        } catch (e) {
+             console.warn("JSON ayrıştırma hatası (substring):", potentialJson);
+        }
+    }
+
+    // 3. Hiçbiri çalışmazsa, basit temizlik ile dene (eski yöntem)
     const rawText = text.trim().replace(/^```json\s*|```\s*$/g, '');
     if (!rawText) {
         throw new Error("Asistan boş bir yanıt döndürdü. Lütfen sorunuzu değiştirerek tekrar deneyin.");
     }
+    
     try {
         return JSON.parse(rawText);
     } catch (e) {
-        console.error("JSON ayrıştırma hatası:", rawText);
+        console.error("JSON ayrıştırma hatası:", text);
         throw new Error("Asistan, beklenmeyen bir formatta yanıt verdi. Lütfen tekrar deneyin.");
     }
 };
@@ -126,7 +153,7 @@ ${critiqueForModel}
 2.  **Web Araştırması:** Google Arama'yı kullanarak soruyu cevaplamak için gereken en güncel ve doğru hukuki normları bul. Bilgiyi normlar hiyerarşisine (Anayasa > Kanun > Yönetmelik vb.) göre doğrula.
 3.  **Sonuç Derlemesi:**
     * \`researchSummary\`: Araştırmandan elde ettiğin, sorunun çözümünde kullanılacak tüm geçerli ve ilgili hukuki metinleri bir "Araştırma Özeti" olarak oluştur. Bu özet, sonraki adımlar için TEK BİLGİ KAYNAĞI olacaktır.
-## ÇOK ÖNEMLİ KURAL: Çıktın, başka hiçbir metin olmadan, doğrudan geçerli bir JSON nesnesi olmalıdır.
+## ÇOK ÖNEMLİ KURAL: Çıktın, başka hiçbir metin (açıklama, sohbet vb.) içermeyen, **SADECE** geçerli bir JSON nesnesi olmalıdır. Markdown formatında (\`\`\`json ... \`\`\`) vermen tercih edilir.
 \`\`\`json
 {
   "researchSummary": "Soruyu cevaplamak için kullanılacak, filtrelenmiş ve doğrulanmış tüm hukuki metinlerin derlemesi. Bu metin, web'den bulunan gerçek kanun maddeleri, yönetmelikler vb. içermelidir."
@@ -142,10 +169,12 @@ ${question}${imageInstruction}
         let researchRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: researchPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : researchPrompt;
 
         const researchResponse = await callGemini({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-3-pro-preview',
             contents: researchRequestContents,
             config: {
                 tools: [{ googleSearch: {} }],
+                // Google Search aracı kullanıldığında responseMimeType: 'application/json' KULLANILMAMALIDIR.
+                // Bu yüzden JSON formatı prompt ile zorlanmaktadır.
             },
         }, signal);
 
@@ -213,7 +242,7 @@ ${question}${imageInstruction}
         const synthesisSchema = { type: Type.OBJECT, properties: { answer: { type: Type.STRING } } };
         let synthesisRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: synthesisPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : synthesisPrompt;
 
-        const synthesisResponse = await callGemini({ model: 'gemini-2.5-pro', contents: synthesisRequestContents, config: { responseMimeType: "application/json", responseSchema: synthesisSchema } }, signal);
+        const synthesisResponse = await callGemini({ model: 'gemini-3-pro-preview', contents: synthesisRequestContents, config: { responseMimeType: "application/json", responseSchema: synthesisSchema } }, signal);
         const synthesisResult = parseJsonFromResponse(synthesisResponse.text);
         proposedAnswer = synthesisResult.answer;
         lastCritique = null;
@@ -225,21 +254,20 @@ ${question}${imageInstruction}
       onProgressUpdate({ stage: 'MANTIKSAL_DENETİM', status: 'running', message: 'Cevabın kaynaklarla mantıksal tutarlılığı denetleniyor...', attempt: attempt });
       
       const logicalCritiquePrompt = `
-# ROL: HUKUK UZMANI DENETÇİ (MANTIKSAL TUTARLILIK)
-Sen şüpheci bir denetçisin. Görevin, bir yapay zeka cevabını, sorunun kendisi ve kullandığı *KAYNAK ÖZETİ* ile karşılaştırarak mantıksal denetimden geçirmektir. KAYNAK ÖZETİ tek doğru kaynaktır.
-## KONTROL SÜRECİ
-1.  **Soru-Cevap Uyumu:** Cevap, sorunun sorduğu şeyi **doğrudan** yanıtlıyor mu? (örn: "değildir" diye sorarken "hangisidir" diye mi cevaplıyor?)
-2.  **Kaynak-Cevap Tutarlılığı:** Cevaptaki her iddia, **sadece** "KAYNAK ÖZETİ" ile destekleniyor mu? Varsayım var mı? Cevapta, özette olmayan bir bilgi var mı?
-## KARAR
-* **BAŞARILIYSA:** \`"isValid": true\`
-* **BAŞARISIZSA:** \`"isValid": false\` ve \`critique\` alanında hatayı açıkla.
-## JSON ÇIKTI FORMATI
-{ "isValid": boolean, "critique": "Hatanın açıklaması." }
----
+# GÖREV: HUKUK DENETİMİ (HIZLI KONTROL)
+Aşağıdaki cevabın, verilen kaynak özeti ve soruyla tutarlı olup olmadığını hızlıca denetle.
+
+## KRİTERLER (KESİN)
+1. Cevap soruyu tam karşılıyor mu?
+2. Cevaptaki bilgiler SADECE "KAYNAK ÖZETİ"nde var mı? (Harici bilgi yasak)
+3. Mantıksal hata var mı?
+
+Eğer sorun yoksa isValid: true yap. Sorun varsa isValid: false yap ve hatayı kısaca açıkla.
+
 # ORİJINAL SORU
 ${question}
 ---
-# KAYNAK ÖZETİ (WEB'DEN BULUNAN TEK DOĞRU KAYNAK)
+# KAYNAK ÖZETİ
 ${researchSummary}
 ---
 # ÜRETİLEN CEVAP
@@ -247,7 +275,17 @@ ${proposedAnswer}
 `;
       const logicalCritiqueSchema = { type: Type.OBJECT, properties: { isValid: { type: Type.BOOLEAN }, critique: { type: Type.STRING } } };
 
-      const logicalCritiqueResponse = await callGemini({ model: 'gemini-2.5-pro', contents: logicalCritiquePrompt, config: { responseMimeType: "application/json", responseSchema: logicalCritiqueSchema } }, signal);
+      // Temperature 0 daha deterministik ve hızlı karar vermesini sağlar.
+      const logicalCritiqueResponse = await callGemini({ 
+          model: 'gemini-3-pro-preview', 
+          contents: logicalCritiquePrompt, 
+          config: { 
+              responseMimeType: "application/json", 
+              responseSchema: logicalCritiqueSchema,
+              temperature: 0.0
+          } 
+      }, signal);
+      
       const logicalCritiqueResult = parseJsonFromResponse(logicalCritiqueResponse.text);
 
       if (!logicalCritiqueResult.isValid) {

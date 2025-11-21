@@ -35,6 +35,12 @@ const ErrorStopIcon: React.FC = () => (
     </svg>
 );
 
+const AiIcon: React.FC = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-600">
+    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+  </svg>
+);
+
 const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ updates, overallStatus, errorMessage }) => {
     const [htmlErrorMessage, setHtmlErrorMessage] = useState('');
 
@@ -86,6 +92,17 @@ const ThinkingProcess: React.FC<ThinkingProcessProps> = ({ updates, overallStatu
 
     return (
         <div className="w-full">
+             {overallStatus === 'running' && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm animate-fadeIn">
+                    <div className="flex-shrink-0 mt-0.5">
+                        <AiIcon />
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed">
+                        Yapay Zeka Modeli <strong>Gemini 3 Pro Preview</strong> olarak güncellendiğinden yanıt verme süresi uzayabilir.
+                    </p>
+                </div>
+            )}
+
             <h3 className="text-lg font-semibold text-slate-800 mb-6 text-center">Asistanınız Düşünüyor...</h3>
             <div className="space-y-4">
                 {updates.map((update, index) => {
