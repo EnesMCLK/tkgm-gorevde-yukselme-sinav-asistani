@@ -14,12 +14,16 @@ declare global {
 }
 
 const Header: React.FC = () => (
-  <header className="bg-white shadow-md">
-    <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center space-x-3">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-      <h1 className="text-2xl font-bold text-slate-800">TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Asistanı</h1>
+  <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-slate-100 transition-all">
+    <div className="max-w-4xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex items-center gap-4">
+      <div className="shrink-0 p-2 bg-blue-50 rounded-2xl">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 sm:h-12 sm:w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+      <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 leading-tight tracking-tight">
+        TKGM Görevde Yükselme ve Unvan Değişikliği Sınav Asistanı
+      </h1>
     </div>
   </header>
 );
@@ -125,32 +129,32 @@ const LicenseModal: React.FC<{ onClose: () => void; content: string }> = ({ onCl
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex justify-center items-center p-4 transition-opacity"
       role="dialog"
       aria-modal="true"
       aria-labelledby="license-title"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col transform transition-all scale-100"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-4 border-b flex justify-between items-center">
-          <h2 id="license-title" className="text-lg font-bold text-slate-800">Telif Hakkı & Fikri Mülkiyet</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <header className="p-5 border-b border-slate-100 flex justify-between items-center">
+          <h2 id="license-title" className="text-xl font-bold text-slate-800">Telif Hakkı & Fikri Mülkiyet</h2>
+          <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
-        <div className="p-6 overflow-y-auto">
+        <div className="p-8 overflow-y-auto">
           <div 
             className="prose prose-sm prose-zinc max-w-none" 
             dangerouslySetInnerHTML={{ __html: htmlContent }} 
           />
         </div>
-        <footer className="p-4 border-t text-right">
+        <footer className="p-5 border-t border-slate-100 text-right">
           <button 
             onClick={onClose} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all shadow-lg shadow-blue-600/20"
           >
             Anladım
           </button>
@@ -213,41 +217,41 @@ const CameraModal: React.FC<{ onClose: () => void; onCapture: (file: File) => vo
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="camera-title"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-4 border-b flex justify-between items-center">
+        <header className="p-4 border-b flex justify-between items-center bg-white z-10">
           <h2 id="camera-title" className="text-lg font-bold text-slate-800">Fotoğraf Çek</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
+          <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors" aria-label="Kapat">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
-        <main className="p-4 flex-grow flex items-center justify-center bg-slate-100 relative">
+        <main className="flex-grow flex items-center justify-center bg-black relative">
           {error ? (
-             <div className="text-center text-red-600 bg-red-50 p-4 rounded-md">
-                <p className="font-semibold">Kamera Hatası</p>
+             <div className="text-center text-red-600 bg-red-50 p-6 rounded-xl mx-4">
+                <p className="font-semibold text-lg">Kamera Hatası</p>
                 <p>{error}</p>
             </div>
           ) : (
-            <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto max-h-full object-contain rounded-md"></video>
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-contain"></video>
           )}
           <canvas ref={canvasRef} className="hidden"></canvas>
         </main>
-        <footer className="p-4 border-t flex justify-center items-center">
+        <footer className="p-6 border-t bg-white flex justify-center items-center">
           <button 
             onClick={takePicture} 
             disabled={!!error}
-            className="p-3 bg-white border-4 border-blue-600 rounded-full hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="p-1.5 bg-white border-4 border-blue-600 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all shadow-lg active:scale-95"
             aria-label="Fotoğrafı çek"
           >
-            <div className="w-10 h-10 bg-blue-600 rounded-full"></div>
+            <div className="w-14 h-14 bg-blue-600 rounded-full"></div>
           </button>
         </footer>
       </div>
@@ -274,20 +278,20 @@ const FeedbackModal: React.FC<{ onClose: () => void; onSubmit: (reason: string) 
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex justify-center items-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="feedback-title"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-lg shadow-xl max-w-lg w-full flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-4 border-b flex justify-between items-center">
+        <header className="p-5 border-b flex justify-between items-center bg-slate-50/50">
           <h2 id="feedback-title" className="text-lg font-bold text-slate-800">Geri Bildirim & Düzeltme Talebi</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-800" aria-label="Kapat">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
         <main className="p-6">
@@ -296,22 +300,22 @@ const FeedbackModal: React.FC<{ onClose: () => void; onSubmit: (reason: string) 
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Örn: Bu yönetmelik maddesi 2023 yılında değiştirildi."
-            className="w-full min-h-24 p-3 border border-slate-300 rounded-md resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black"
+            className="w-full min-h-32 p-4 border border-slate-300 rounded-xl resize-y focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-slate-50 text-slate-800"
             aria-label="Düzeltme nedeni"
             autoFocus
           />
         </main>
-        <footer className="p-4 border-t flex justify-end items-center space-x-3 bg-slate-50 rounded-b-lg">
+        <footer className="p-5 border-t flex justify-end items-center space-x-3 bg-slate-50/50">
           <button 
             onClick={onClose} 
-            className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400"
+            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all"
           >
             İptal
           </button>
           <button 
             onClick={handleSubmit} 
             disabled={!reason.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all shadow-md disabled:shadow-none"
           >
             Düzeltme Gönder
           </button>
@@ -510,30 +514,30 @@ const App: React.FC = () => {
       {isLicenseVisible && <LicenseModal onClose={() => setIsLicenseVisible(false)} content={licenseText} />}
       {isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />}
       {isFeedbackModalOpen && <FeedbackModal onClose={() => setIsFeedbackModalOpen(false)} onSubmit={handleCorrectionSubmit} />}
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-slate-50">
         <Header />
         <main className="flex-grow w-full">
-          <div className="py-6">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="py-6 sm:py-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 transition-shadow hover:shadow-xl">
                 <form onSubmit={handleSubmit}>
-                    <div className="relative">
+                    <div className="relative group">
                     <textarea
                       ref={textareaRef}
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Sorunuzu buraya yazın... (Örn: 657 sayılı Devlet Memurları Kanunu'na göre, adaylık süresi en fazla ne kadardır?)"
-                      className="w-full min-h-48 p-4 pr-16 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white text-black overflow-y-hidden"
+                      className="w-full min-h-48 p-4 pr-16 border-2 border-slate-100 rounded-xl resize-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-800 placeholder:text-slate-400 overflow-y-hidden"
                       aria-label="Soru"
                       disabled={isLoading}
                     />
-                    <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                    <div className="absolute top-4 right-4">
                       {isLoading ? (
                          <button
                           type="button"
                           onClick={handleCancel}
-                          className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform duration-75 active:scale-90"
+                          className="p-2.5 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform duration-100 active:scale-95"
                           aria-label="Durdur"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -543,7 +547,7 @@ const App: React.FC = () => {
                       ) : (
                         <button
                           type="submit"
-                          className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform duration-75 active:scale-90"
+                          className="p-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-100 active:scale-95"
                           disabled={!question.trim()}
                           aria-label="Soruyu gönder"
                         >
@@ -555,15 +559,25 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center space-x-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50" disabled={isLoading}>
-                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        type="button" 
+                        onClick={() => fileInputRef.current?.click()} 
+                        className="flex items-center px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-slate-400 disabled:opacity-50 shadow-sm"
+                        disabled={isLoading}
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                         </svg>
                         Görsel Ekle
                       </button>
-                       <button type="button" onClick={() => setIsCameraOpen(true)} className="px-3 py-1.5 border border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50" disabled={isLoading}>
-                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                       <button 
+                         type="button" 
+                         onClick={() => setIsCameraOpen(true)} 
+                         className="flex items-center px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-slate-400 disabled:opacity-50 shadow-sm"
+                         disabled={isLoading}
+                       >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
                            <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                          </svg>
                         Fotoğraf Çek
@@ -571,9 +585,9 @@ const App: React.FC = () => {
                       <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
                       </div>
                       {image && (
-                        <div className="flex items-center space-x-2 text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
-                          <span className="min-w-0 break-all">{image.file.name}</span>
-                          <button onClick={removeImage} className="flex-shrink-0 text-red-500 hover:text-red-700" aria-label="Görseli kaldır">
+                        <div className="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 pl-3 pr-2 py-1.5 rounded-full border border-blue-100">
+                          <span className="truncate max-w-[150px] font-medium">{image.file.name}</span>
+                          <button onClick={removeImage} className="p-1 hover:bg-blue-200 rounded-full transition-colors text-blue-500 hover:text-blue-800" aria-label="Görseli kaldır">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
                           </button>
                         </div>
@@ -585,48 +599,49 @@ const App: React.FC = () => {
           </div>
           
           {processStatus !== 'idle' && (
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px] flex items-center justify-center">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100 min-h-[200px] flex items-center justify-center">
                 { (processStatus === 'running' || processStatus === 'cancelled' || processStatus === 'error') ? (
                   <ThinkingProcess updates={thinkingSteps} overallStatus={processStatus} errorMessage={errorMessage} />
                 ) : (
                   answer && processStatus === 'success' && (
                     <div className='w-full'>
-                      <details className="mb-6 group" open>
+                      <details className="mb-8 group bg-slate-50 p-4 rounded-xl border border-slate-200" open>
                         <summary className="font-semibold text-slate-800 cursor-pointer list-none flex items-center justify-between">
-                          <span>Düşünme Süreci Tamamlandı</span>
-                          <svg className="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <span className="flex items-center">
+                             <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             Düşünme Süreci Tamamlandı
+                          </span>
+                          <svg className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                           </svg>
                         </summary>
-                        <div className="mt-4 pl-4 border-l-2 border-slate-200 space-y-2">
+                        <div className="mt-4 pl-2 space-y-3">
                             {thinkingSteps.filter(s => s.stage !== 'TAMAMLANDI').map((step, index) => (
-                                <div key={index} className="flex items-center text-sm text-slate-600">
-                                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span>{step.message}</span>
+                                <div key={index} className="flex items-start text-sm text-slate-600">
+                                    <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-green-500 mr-3 flex-shrink-0"></div>
+                                    <span className="leading-relaxed">{step.message}</span>
                                 </div>
                             ))}
                         </div>
                       </details>
                       <div
                           ref={answerRef}
-                          className="prose prose-zinc max-w-none border-t border-slate-200 pt-6"
+                          className="prose prose-zinc max-w-none"
                           dangerouslySetInnerHTML={{ __html: answer }}
                       />
-                      <div className="mt-8 pt-4 border-t border-slate-200">
-                        <p className="text-sm font-semibold text-slate-700 mb-2 text-center">
+                      <div className="mt-10 pt-6 border-t border-slate-100">
+                        <p className="text-sm font-semibold text-slate-500 mb-4 text-center tracking-wide uppercase">
                           {feedbackStatus === 'idle' ? 'Bu cevap yardımcı oldu mu?' : 'Geri bildiriminiz için teşekkürler!'}
                         </p>
-                        <div className="flex justify-center items-center space-x-4">
+                        <div className="flex justify-center items-center gap-4">
                           <button
                             onClick={handlePositiveFeedback}
                             disabled={feedbackStatus !== 'idle'}
-                            className={`flex items-center space-x-2 px-4 py-2 border rounded-full transition-colors disabled:cursor-not-allowed
+                            className={`flex items-center space-x-2 px-6 py-2.5 border rounded-full transition-all disabled:cursor-not-allowed shadow-sm
                               ${feedbackStatus === 'positive'
-                                ? 'bg-green-600 border-green-600 text-white'
-                                : `bg-white border-slate-300 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-green-50 hover:border-green-400 hover:text-green-700' : 'opacity-50'}`
+                                ? 'bg-green-600 border-green-600 text-white ring-4 ring-green-100'
+                                : `bg-white border-slate-200 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-green-50 hover:border-green-300 hover:text-green-700 hover:shadow-md' : 'opacity-50'}`
                               }`
                             }
                             aria-label="Cevap doğru"
@@ -634,15 +649,15 @@ const App: React.FC = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333V17a1 1 0 001 1h6.758a1 1 0 00.97-1.22l-1.38-4.143A1 1 0 0012.38 11H9V6.5a1.5 1.5 0 00-3 0v3.833z" />
                             </svg>
-                            <span>Evet</span>
+                            <span className="font-medium">Evet</span>
                           </button>
                           <button
                             onClick={handleNegativeFeedback}
                             disabled={feedbackStatus !== 'idle'}
-                            className={`flex items-center space-x-2 px-4 py-2 border rounded-full transition-colors disabled:cursor-not-allowed
+                            className={`flex items-center space-x-2 px-6 py-2.5 border rounded-full transition-all disabled:cursor-not-allowed shadow-sm
                               ${feedbackStatus === 'negative'
-                                ? 'bg-red-600 border-red-600 text-white'
-                                : `bg-white border-slate-300 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-red-50 hover:border-red-400 hover:text-red-700' : 'opacity-50'}`
+                                ? 'bg-red-600 border-red-600 text-white ring-4 ring-red-100'
+                                : `bg-white border-slate-200 text-slate-600 ${feedbackStatus === 'idle' ? 'hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-md' : 'opacity-50'}`
                               }`
                             }
                             aria-label="Cevap yanlış"
@@ -650,7 +665,7 @@ const App: React.FC = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667V3a1 1 0 00-1-1h-6.758a1 1 0 00-.97 1.22l1.38 4.143A1 1 0 007.62 9H11v4.5a1.5 1.5 0 003 0V9.667z" />
                             </svg>
-                            <span>Hayır</span>
+                            <span className="font-medium">Hayır</span>
                           </button>
                         </div>
                       </div>
@@ -661,10 +676,10 @@ const App: React.FC = () => {
             </div>
           )}
         </main>
-        <footer className="bg-white mt-auto">
-          <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
-            <p>Bu asistan, yalnızca çalışma amacıyla kullanılan bir yapay zeka uygulamasıdır.</p>
-            <button onClick={() => setIsLicenseVisible(true)} className="text-blue-600 hover:underline">
+        <footer className="mt-auto border-t border-slate-200 bg-white">
+          <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-sm text-slate-500 mb-2">Bu asistan, yalnızca çalışma amacıyla kullanılan bir yapay zeka uygulamasıdır.</p>
+            <button onClick={() => setIsLicenseVisible(true)} className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">
               Telif Hakkı & Fikri Mülkiyet Bildirimi
             </button>
           </div>
