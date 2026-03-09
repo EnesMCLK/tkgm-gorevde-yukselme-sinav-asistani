@@ -42,43 +42,11 @@ Asistan, kendisine yöneltilen bir soruyu cevaplarken aşağıda belirtilen titi
 
 > **Örnek Mantık:** *Eğer bir Genelge'de belirtilen bir uygulama, daha sonra çıkan bir Kanun ile değiştirilmişse, asistan kesinlikle güncel olan Kanun'u referans alır ve Genelge'nin o hükmünün artık geçersiz olduğunu vurgular.*
 
-## 🚀 Yerel Olarak Çalıştırma
-
-**Ön Gereksinimler:** [Node.js](https://nodejs.org/) (versiyon 18 veya üstü) yüklü olmalıdır.
-
-1.  **Gerekli paketleri yükleyin:**
-    ```bash
-    npm install
-    ```
-
-2.  Proje ana dizininde `.env.local` adında bir dosya oluşturun ve içerisine kendi Google AI Studio API anahtarınızı aşağıdaki gibi ekleyin:
-    ```
-    GEMINI_API_KEY=SIZIN_API_ANAHTARINIZ
-    ```
-
-3.  **Uygulamayı geliştirme modunda çalıştırın:**
-    ```bash
-    npm run dev
-    ```
-    Tarayıcınızda `http://localhost:3000` adresini açarak uygulamaya erişebilirsiniz.
-
 ## 💻 Kullanılan Teknolojiler
 
 * **Dil Modeli:** Google Gemini
 * **Framework:** Next.js
 * **Veri Kaynakları:** T.C. Mevzuat Bilgi Sistemi, TKGM Mevzuat Portalı ve ilgili resmi kaynaklar.
-
-## ✍️ Katkıda Bulunma
-
-Bu proje, TKGM personeli için değerli bir kaynak olma potansiyeline sahiptir. Katkılarınızla daha da gelişebilir.
-
-1.  Bu repoyu **fork'layın**.
-2.  Yeni bir **branch** oluşturun (`git checkout -b ozellik/yeni-mevzuat-ekle`).
-3.  Değişikliklerinizi yapın ve **commit'leyin** (`git commit -m 'Yeni özellik eklendi'`).
-4.  Branch'inizi **push'layın** (`git push origin ozellik/yeni-mevzuat-ekle`).
-5.  Bir **Pull Request** açın.
-
-Hata bildirimleri ve özellik talepleri için lütfen GitHub **Issues** bölümünü kullanın.
 
 ----
 
