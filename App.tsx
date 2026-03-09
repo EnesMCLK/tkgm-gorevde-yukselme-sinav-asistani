@@ -6,13 +6,6 @@ import { marked } from 'marked';
 type ProcessStatus = 'idle' | 'running' | 'success' | 'cancelled' | 'error';
 type FeedbackStatus = 'idle' | 'positive' | 'negative';
 
-declare global {
-  interface Window {
-    va: (command: string, eventName: string, data?: Record<string, any>) => void;
-    vaq: any[];
-  }
-}
-
 const Header: React.FC = () => (
   <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-slate-100 transition-all">
     <div className="max-w-4xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex items-center gap-4">
@@ -460,13 +453,6 @@ const App: React.FC = () => {
     setIsFeedbackModalOpen(false);
     setFeedbackStatus('negative');
 
-    window.va?.('event', 'Feedback', { 
-        status: 'negative_with_reason',
-        question: submittedQuestionRef.current,
-        answer_snippet: rawAnswerRef.current.substring(0, 100),
-        reason: reason
-    });
-    
     executeQuery(submittedQuestionRef.current, reason);
 
   }, [executeQuery]);
@@ -474,11 +460,7 @@ const App: React.FC = () => {
   const handlePositiveFeedback = useCallback(() => {
     if (feedbackStatus !== 'idle') return;
     setFeedbackStatus('positive');
-    window.va?.('event', 'Feedback', { 
-        status: 'positive',
-        question: submittedQuestionRef.current,
-        answer_snippet: rawAnswerRef.current.substring(0, 100) 
-    });
+
   }, [feedbackStatus]);
 
   const handleNegativeFeedback = useCallback(() => {
