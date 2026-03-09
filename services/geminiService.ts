@@ -178,7 +178,7 @@ ${question}${imageInstruction}
         let researchRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: researchPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : researchPrompt;
 
         const researchResponse = await callGemini({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-3.1-pro-preview',
             contents: researchRequestContents,
             config: {
                 tools: [{ googleSearch: {} }],
@@ -261,7 +261,7 @@ ${question}${imageInstruction}
         let synthesisRequestContents: GenerateContentParameters['contents'] = image ? { parts: [{ text: synthesisPrompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }] } : synthesisPrompt;
 
         const synthesisResponse = await callGemini({ 
-            model: 'gemini-3-pro-preview', 
+            model: 'gemini-3.1-pro-preview', 
             contents: synthesisRequestContents, 
             config: { 
                 responseMimeType: "application/json", 
@@ -308,7 +308,7 @@ ${proposedAnswer}
 
       // Temperature 0.0: Denetim deterministik olmalı.
       const logicalCritiqueResponse = await callGemini({ 
-          model: 'gemini-3-pro-preview', 
+          model: 'gemini-3.1-pro-preview', 
           contents: logicalCritiquePrompt, 
           config: { 
               responseMimeType: "application/json", 
