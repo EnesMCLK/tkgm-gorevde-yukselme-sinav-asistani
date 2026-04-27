@@ -241,6 +241,7 @@ ${synthesisCritiqueForModel}
     *   İlgili mevzuat maddesini **tırnak içinde ve italik** olarak alıntıla.
     *   Alıntının altına, sorunun cevabını net bir şekilde yaz.
     *   Neden bu cevabın doğru olduğunu, diğer şıkların (varsa) neden yanlış olduğunu açıkla.
+    *   **ÖNEMLİ:** Cevabını oluştururken yeni satıra geçmek için \`\\n\` (newline) karakterini doğrudan kullan, literal \`/n\` veya \`\\n\` gibi kaçış dizileri ASLA kullanma.
 3.  **Üslup:** Resmi, öğretici ve net bir dil kullan.
 
 ## ÇIKTI FORMATI (JSON)
@@ -272,7 +273,7 @@ ${question}${imageInstruction}
         }, signal);
         
         const synthesisResult = parseJsonFromResponse(synthesisResponse.text);
-        proposedAnswer = synthesisResult.answer;
+        proposedAnswer = synthesisResult.answer.replace(/\/n/g, '\n');
       }
       
       // =================================================================================
